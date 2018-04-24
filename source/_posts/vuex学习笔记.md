@@ -58,7 +58,7 @@ Vuex 是一个专为 Vue.js 应用程序开发的状态管理模式。我们可�
 
 State
 ====
-state可以理解成状态，它记录了整个项目的各个状态属性。Vuex使用单一状态树，简单的说，就是每个应用仅仅包含一个store实例。只要在根实例中注册了 store 选项，该 store 实例会注入到根组件下的所有子组件中，然后子组件就都可以通过 `this.$store` 访问到了。例如上面的代码中，在整个项目的vue组件中都可以使用`this.$store.state.hasLogin` 来获取hasLogin这个状态。
+state可以理解成状态，它记录了整个项目的各个状态属性。Vuex使用单一状态树，简单的说，就是每个应用仅仅包含一个store实例。只要在根实例中注册了 store 选项，该 store 实例会注入到根组件下的所有子组件中，然后子组件就都可以通过 `this.$store` 访问到了。例如上面的代码中，在整个项目的vue组件中都可以使用`this.$store.state.hasLogin` 来获取hasLogin这个状态。在Vue组件中，通常使用计算属性返回某个状态，来获得Vuex状态。
 
 Getter
 ======
