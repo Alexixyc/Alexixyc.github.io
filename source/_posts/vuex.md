@@ -1,11 +1,11 @@
 ---
 layout: photopost
 title: VUEX学习笔记
-date: 2018-03-27 17:24:37
+date: 2018-03-07 17:24:37
 categories: study notes #文章分类
 tags: [study notes]
 ---
-![Vuex](vuex学习笔记/vuex.png)
+![Vuex](vuex/vuex.png)
 <!-- more -->
 
 Vuex 简介
