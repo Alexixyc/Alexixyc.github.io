@@ -6,6 +6,9 @@ categories: study notes #文章分类
 tags: [study notes]
 ---
 ![Vuex](vuex/vuex.png)
+
+vuex学习笔记
+
 <!-- more -->
 
 Vuex 简介

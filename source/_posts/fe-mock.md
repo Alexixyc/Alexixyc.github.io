@@ -1,5 +1,5 @@
 ---
-title: 关于前端数据Mock---Express + Mockjs
+title: 前端数据Mock---Express + Mockjs
 date: 2018-04-24 21:59:04
 categories: share #文章分类
 tags: [share]
