@@ -6,7 +6,7 @@ categories: share
 date: 2018-08-04 12:18:04
 ---
 
-<!-- ![Vuex](fe-mock/mock.jpg) -->
+<img src="./wechat.png" width="400px">
 
 &emsp;&emsp;前段时间，在第一次接触小程序开发的项目中，使用了美团的小程序框架mpvue。本文旨在给大家分享一些，自己在第一次接触小程序开发时遇到的一些常见需求的解决办法，以及在使用mpvue框架时踩过的坑，希望能帮助到大家。
 
