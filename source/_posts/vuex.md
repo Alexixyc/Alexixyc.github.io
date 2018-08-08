@@ -5,7 +5,7 @@ date: 2018-03-07 17:24:37
 categories: study notes #文章分类
 tags: [study notes]
 ---
-![Vuex](vuex/vuex.png)
+<img src="./vuex.png" width="400px">
 
 vuex学习笔记
 
