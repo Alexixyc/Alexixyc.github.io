@@ -23,6 +23,9 @@ date: 2018-08-04 12:18:04
 >&emsp;&emsp;openid：用户唯一标识
 >&emsp;&emsp;unionid：用户在开放平台的唯一标识符
 
+>登录流程图
+<img src="./api-login.jpg" width="500px">
+
 ### 普通登录
 
 1. 小程序客户端调用wx.login()获取code。
@@ -39,6 +42,22 @@ date: 2018-08-04 12:18:04
 &emsp;&emsp;相对于用户头像昵称来说，用户手机号是一个更隐私的用户信息，所以手机号的授权操作会繁琐一些，并且需要后端的支持。`getPhoneNumber(OBJECT)`需要用户主动触发才能发起获取手机号接口，所以该功能不由API来调用，需用`<button>`组件的点击来触发。
 1. 小程序客户端调用wx.login()获取code。
 2. 设置`<button>`组件`open-type`的值设置为`getPhoneNumber`，用户点击并同意授权后，通过`bindgetphonenumber`事件回调获取到微信服务器返回的加密数据。
+
+```html
+<button open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">
+    微信授权登录
+</button>
+```
+```js
+getPhoneNumber(e) {
+    if (e.mp.detail.encryptedData) {
+        // 授权成功 将encryptedData和iv发送给开发者服务端
+    } else {
+        // 拒绝收取，做相应的逻辑处理
+    }
+}
+```
+
 3. 小程序客户端将加密数据和code一同发送给开发者服务器端。
 4. 开发者服务端将，根据code获取openid，和通过加密数据、以及微信提供的[加密数据解密算法](https://developers.weixin.qq.com/miniprogram/dev/api/signature.html#wxchecksessionobject "加密数据解密算法")得到的用户手机号绑定在一起插入数据库。
 
@@ -47,7 +66,14 @@ date: 2018-08-04 12:18:04
 ## 微信授权用户信息
 
 &emsp;&emsp;微信小程序可以通过调用`wx.getUserInfo(OBJECT)`来获取用户头像，昵称等基本的微信账号信息。这个功能很常见，一般是用于展示用户的微信头像和昵称。
-&emsp;&emsp;但有一点要注意的就是，今年4、5月份左右，微信更新了api，小程序不支出直接引导用户授权用户信息了。也就是说，如果用户没有授权过用户信息的话，直接调用`wx.getUserInfo()`将不会再弹出上面👆的这个授权弹窗了。微信推荐的方法是，设置`<button>`组件的`open-type`属性为`getUserinfo`，引导用户主动的点击按钮来进行授权操作。
+&emsp;&emsp;但有一点要注意的就是，最新的小程序api中，不支出直接引导用户授权用户信息了。也就是说，如果用户没有授权过用户信息的话，直接调用`wx.getUserInfo()`将不会再弹出授权弹窗了。微信推荐的方法是，设置`<button>`组件的`open-type`属性为`getUserinfo`，引导用户主动的点击按钮来进行授权操作。
+
+```html
+<button open-type="getUserInfo" bindgetuserinfo="onGotUserInfo">
+    分享喜悦给好友
+</button>
+```
+
 &emsp;&emsp;这个变化目前对已发布的小程序暂时没有影响，但是【开发版】和【体验版】小程序，已经有了限制。__`所以，如果小程序需要授权用户基本信息，在设计时，需要设计一个用户按钮点击的交互。`__
 
 ## 下拉刷新、上拉加载
@@ -64,6 +90,7 @@ date: 2018-08-04 12:18:04
 &emsp;&emsp;分享功能应该可以说是每款小程序比不可少功能了，小程序支持分享到聊天回话，不支持直接分享到朋友圈。小程序的分享有几个特点：页面可配置、文字/图片可配置、可携带参数。
 
 &emsp;&emsp;首先，设置`<button>`组件的`open-type`属性为`share`
+
 ```html
     <button open-type="share">分享转发</button>
 ```
