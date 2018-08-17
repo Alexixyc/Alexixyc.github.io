@@ -66,7 +66,7 @@ getPhoneNumber(e) {
 ## 微信授权用户信息
 
 &emsp;&emsp;微信小程序可以通过调用`wx.getUserInfo(OBJECT)`来获取用户头像，昵称等基本的微信账号信息。这个功能很常见，一般是用于展示用户的微信头像和昵称。
-&emsp;&emsp;但有一点要注意的就是，最新的小程序api中，不支出直接引导用户授权用户信息了。也就是说，如果用户没有授权过用户信息的话，直接调用`wx.getUserInfo()`将不会再弹出授权弹窗了。微信推荐的方法是，设置`<button>`组件的`open-type`属性为`getUserinfo`，引导用户主动的点击按钮来进行授权操作。
+&emsp;&emsp;但有一点要注意的就是，最新的小程序api中，不支持直接引导用户授权用户信息了。也就是说，如果用户没有授权过用户信息的话，直接调用`wx.getUserInfo()`将不会再弹出授权弹窗了。微信推荐的方法是，设置`<button>`组件的`open-type`属性为`getUserinfo`，引导用户主动的点击按钮来进行授权操作。
 
 ```html
 <button open-type="getUserInfo" bindgetuserinfo="onGotUserInfo">
