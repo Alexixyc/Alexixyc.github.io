@@ -5,6 +5,13 @@
   "hexo": {
     "version": "3.7.1"
   },
+  "scripts": {
+    "clean": "hexo clean",
+    "dev": "hexo s",
+    "draft": "hexo s --draft",
+    "build": "hexo g && cd alexiPages && npm run build",
+    "publish": "hexo d"
+  },
   "dependencies": {
     "hexo": "^3.5.0",
     "hexo-asset-image": "0.0.3",
