@@ -42,15 +42,16 @@ module.exports = {
   },
   resolve: {
     alias: {
-      'vue$': 'vue/dist/vue.esm.js'
+      'vue$': 'vue/dist/vue.esm.js',
+      '@': path.resolve(__dirname, './src')
     },
     extensions: ['*', '.js', '.vue', '.json']
   },
   devServer: {
-    historyApiFallback: true,
-    noInfo: true,
-    overlay: true
-  },
+		contentBase: path.resolve(__dirname, '../public/dist'),
+		host: '0.0.0.0',
+		port: 2335
+	},
   performance: {
     hints: false
   },
