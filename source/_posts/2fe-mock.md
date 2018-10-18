@@ -1,16 +1,16 @@
 ---
 title: 前端数据Mock---Express + Mockjs
 date: 2018-04-24 21:59:04
+updated: 2018-5-18 11:46:36
+tags:
+  - share
 categories: share #文章分类
-tags: [share]
 ---
-
 <img src="./mock.jpg" width="400px">
-
 前端开发中，数据mock是一个可大可小、可繁可简的开发流程，完整的前端数据mock最大的目的是旨在**降低前后端接口联调的成本**。
 本文给大家分享自己在开发中的mock数据的方法，内容简单易懂，欢迎各位大佬批评指正。
-
 <!-- more -->
+---
 
 前端数据模拟
 ==========

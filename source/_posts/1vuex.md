@@ -1,15 +1,15 @@
 ---
-layout: photopost
 title: VUEX学习笔记
+tags:
+  - study notes
 date: 2018-03-07 17:24:37
+updated: 2018-05-02 12:04:21
 categories: study notes #文章分类
-tags: [study notes]
 ---
 <img src="./vuex.png" width="400px">
-
 vuex学习笔记
-
 <!-- more -->
+---
 
 Vuex 简介
 ========
