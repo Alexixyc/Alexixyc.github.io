@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './route'
-import AxUI from 'axpagination'
+import AxUI from 'ax-view'
 
 Vue.use(AxUI)
 
