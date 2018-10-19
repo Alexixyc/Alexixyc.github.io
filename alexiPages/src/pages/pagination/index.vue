@@ -10,14 +10,10 @@
     </div>
 </template>
 <script>
-import pagination from './com/index'
 export default {
-    components: {
-        'ax-pagination': pagination
-    },
     data() {
         return {
-            total: 50,
+            total: 120,
             currentPage: 1,
             pageSize: 10
         }

@@ -5,7 +5,7 @@ Vue.use(Router)
 import Pagination from '@/pages/pagination/index.vue'
 const RouterOpt = {
     routes: [{
-        path: '/pagination',
+        path: '/',
         component: Pagination
     }]
 }

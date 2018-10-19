@@ -2,10 +2,14 @@ var path = require('path')
 var webpack = require('webpack')
 var HtmlWebpackPlugin = require('html-webpack-plugin'); //打包html的插件
 
+// 执行环境
+const NODE_ENV = process.env.NODE_ENV
+console.log(NODE_ENV)
+
 module.exports = {
   entry: './src/main.js',
   output: {
-    path: path.resolve(__dirname, '../public/dist'),
+    path: NODE_ENV == 'development' ? path.resolve(__dirname, 'dist') : path.resolve(__dirname, '../public/dist'),
     publicPath: '/dist/',
     filename: 'build.js'
   },
@@ -48,7 +52,7 @@ module.exports = {
     extensions: ['*', '.js', '.vue', '.json']
   },
   devServer: {
-		contentBase: path.resolve(__dirname, '../public/dist'),
+		contentBase: path.resolve(__dirname),
 		host: '0.0.0.0',
 		port: 2335
 	},
@@ -59,7 +63,7 @@ module.exports = {
 }
 
 if (process.env.NODE_ENV === 'production') {
-  module.exports.devtool = '#source-map'
+  // module.exports.devtool = '#source-map'
   // http://vue-loader.vuejs.org/en/workflow/production.html
   module.exports.plugins = (module.exports.plugins || []).concat([
     new webpack.DefinePlugin({
