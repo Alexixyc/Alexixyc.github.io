@@ -4,7 +4,7 @@ tags:
   - tag1
   - tag2
 date: 2018-10-18 12:04:10
-updated: 2018-10-18 12:04:10
+updated: 2018-10-24 12:04:10
 categories:
 ---
 <img src="https://cdn.dribbble.com/users/2110866/screenshots/4267676/dribbble_thank_2.jpg" width="400px">
@@ -14,3 +14,4 @@ categories:
 
 > [分页组件](http://alexixyc.cn/dist/#/pagination "分页组件pagination")
 
+> [选择器组件](http://alexixyc.cn/dist/#/select "选择器组件select")
