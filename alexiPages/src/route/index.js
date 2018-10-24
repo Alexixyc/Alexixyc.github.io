@@ -2,12 +2,23 @@ import Vue from 'vue'
 import Router from 'vue-router'
 Vue.use(Router)
 
-import Pagination from '@/pages/pagination/index.vue'
-const RouterOpt = {
+import index from '@/pages/index'
+import pagination from '@/pages/pagination/index.vue'
+import select from '@/pages/select/index.vue'
+
+export default new Router ({
     routes: [{
         path: '/',
-        component: Pagination
+		name: 'index',
+		component: index,
+		children: [{
+				path: 'pagination',
+				name: 'pagination',
+				component: pagination
+			}, {
+				path: 'select',
+				name: 'select',
+				component: select
+			}]
     }]
-}
-
-export default new Router(RouterOpt)
+})

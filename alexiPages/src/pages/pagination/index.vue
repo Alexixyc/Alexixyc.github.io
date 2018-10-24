@@ -6,7 +6,6 @@
             :pageSize="pageSize"
             @changePage="changePage">
         </ax-pagination>
-        <ax-test></ax-test>
         <div class="label">当前是第{{currentPage}}页</div>
     </div>
 </template>

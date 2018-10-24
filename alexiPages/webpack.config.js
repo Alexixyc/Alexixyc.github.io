@@ -52,7 +52,7 @@ module.exports = {
     extensions: ['*', '.js', '.vue', '.json']
   },
   devServer: {
-		contentBase: path.resolve(__dirname),
+		contentBase: path.resolve(__dirname, './test'),
 		host: '0.0.0.0',
 		port: 2335
 	},
