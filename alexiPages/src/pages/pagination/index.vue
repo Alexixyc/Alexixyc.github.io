@@ -1,12 +1,11 @@
 <template>
-    <div class="pagi">
+    <div>
         <ax-pagination
             :total="total"
             :currentPage="currentPage"
             :pageSize="pageSize"
             @changePage="changePage">
         </ax-pagination>
-        <div class="label">当前是第{{currentPage}}页</div>
     </div>
 </template>
 <script>
@@ -15,7 +14,7 @@ export default {
         return {
             total: 120,
             currentPage: 1,
-            pageSize: 10
+            pageSize: 6
         }
     },
     methods: {
@@ -27,4 +26,3 @@ export default {
 }
 </script>
 
-<style scoped src = "./style.less" lang="less"></style>
