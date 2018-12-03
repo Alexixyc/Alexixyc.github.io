@@ -10,7 +10,7 @@
     "dev": "hexo s",
     "dev-vue": "cd alexiPages && npm run dev",
     "draft": "hexo s --draft",
-    "build": "hexo g && cd alexiPages && npm run build",
+    "build": "hexo g && node baidu_seo_verify.js && cd alexiPages && npm run build",
     "publish": "hexo d"
   },
   "dependencies": {
