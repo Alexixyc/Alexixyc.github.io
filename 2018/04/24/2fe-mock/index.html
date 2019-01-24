@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="share,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前端开发中，数据mock是一个可大可小、可繁可简的开发流程，完整的前端数据mock最大的目的是旨在降低前后端接口联调的成本。本文给大家分享自己在开发中的mock数据的方法，内容简单易懂，欢迎各位大佬批评指正。">
+<meta name="keywords" content="share">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端数据Mock---Express + Mockjs">
+<meta property="og:url" content="http://alexixyc.cn/2018/04/24/2fe-mock/index.html">
+<meta property="og:site_name" content="AlexiXiang’s Blog">
+<meta property="og:description" content="前端开发中，数据mock是一个可大可小、可繁可简的开发流程，完整的前端数据mock最大的目的是旨在降低前后端接口联调的成本。本文给大家分享自己在开发中的mock数据的方法，内容简单易懂，欢迎各位大佬批评指正。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://alexixyc.cn/2018/04/24/2fe-mock/mock.jpg">
+<meta property="og:image" content="http://alexixyc.cn/2018/04/24/2fe-mock/fe-mock/withCredentials.jpg">
+<meta property="og:updated_time" content="2018-05-18T03:46:36.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前端数据Mock---Express + Mockjs">
+<meta name="twitter:description" content="前端开发中，数据mock是一个可大可小、可繁可简的开发流程，完整的前端数据mock最大的目的是旨在降低前后端接口联调的成本。本文给大家分享自己在开发中的mock数据的方法，内容简单易懂，欢迎各位大佬批评指正。">
+<meta name="twitter:image" content="http://alexixyc.cn/2018/04/24/2fe-mock/mock.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://alexixyc.cn/2018/04/24/2fe-mock/">
+
+
+
+
+
+  <title>前端数据Mock---Express + Mockjs | AlexiXiang’s Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AlexiXiang’s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://alexixyc.cn/2018/04/24/2fe-mock/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AlexiXiang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AlexiXiang’s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前端数据Mock---Express + Mockjs</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-24T21:59:04+08:00">
+                2018-04-24
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-05-18T11:46:36+08:00">
+                2018-05-18
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/share/" itemprop="url" rel="index">
+                    <span itemprop="name">share</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.8k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  10
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="/2018/04/24/2fe-mock/./mock.jpg" width="400px"><br>前端开发中，数据mock是一个可大可小、可繁可简的开发流程，完整的前端数据mock最大的目的是旨在<strong>降低前后端接口联调的成本</strong>。<br>本文给大家分享自己在开发中的mock数据的方法，内容简单易懂，欢迎各位大佬批评指正。</p>
+<a id="more"></a>
+<hr>
+<h1 id="前端数据模拟"><a href="#前端数据模拟" class="headerlink" title="前端数据模拟"></a>前端数据模拟</h1><p>在前后端分离的开发模式中，前后端通常是先约定好接口的输入输出以及格式，然后各自按照接口格式来进行同步的开发，等后端接口实现完成，前端数据逻辑处理也完成后，再进行前后端联调。</p>
+<p>所以当项目接口比较多，而且后端接口还未全部实现的时候，前端需要对接口数据进行模拟，以便编写前端的交互逻辑等功能性的代码。这个时候我们就需要尽可能全面地模拟接口数据的各种情况，这样的话，当后端接口全部实现后，可以降低前后端的联调成本。</p>
+<h1 id="MockJs"><a href="#MockJs" class="headerlink" title="MockJs"></a>MockJs</h1><p>mockJs是一个可以模拟接口数据的插件，它可以很方便地模拟各种类型的接口数据，而且模拟的数据时可随机的。虽然这个库有不少的坑点（后面会讲）而且貌似已经很久没有维护了，但是仅仅用来做数据模拟还是挺方便的，首先，需要安装一下：</p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install mockjs --save-dev</span><br></pre></td></tr></table></figure>
+<h2 id="简单用法"><a href="#简单用法" class="headerlink" title="简单用法"></a>简单用法</h2><p>首先，新建一个<code>mock.js</code>文件，模拟一个简单的接口：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> Mock = <span class="built_in">require</span>(<span class="string">'mockjs'</span>)</span><br><span class="line">Mock.mock(<span class="string">'//mock/base/getUserInfoFromPC'</span>, &#123;</span><br><span class="line">    <span class="string">'code'</span>: <span class="number">200</span>,</span><br><span class="line">    <span class="string">'data'</span>: &#123;</span><br><span class="line">        <span class="string">'nickName'</span>: <span class="string">'alexixiang'</span>,</span><br><span class="line">        <span class="string">'id'</span>: <span class="number">1707000766</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>上面的代码就模拟了一个接口名为<code>/base/getUserInfoFromPC</code>的接口。我一般会在后端定义的真实接口前面加一个标志位，这里是加一个<code>mock</code>，目的是方便区分什么时候取自己模拟的数据，时候取后端真实接口的数据。</p>
+<p>然后，在项目的请求封装的文件中添加下列代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> mock = <span class="literal">true</span> <span class="comment">// true</span></span><br><span class="line"><span class="keyword">let</span> baseURL = mock ? <span class="string">'//mock/'</span> : <span class="string">`//activity.f***s.cn/`</span></span><br></pre></td></tr></table></figure>
+<p>在项目前后端独立开发阶段，设置<code>mock</code>为true，所有的请求都会以<code>//mock</code>开头，刚好和我们<code>mock.js</code>中设置的一一对应，mockjs会拦截到所有<code>//mock</code>开头的请求，并且返回它自己模拟的数据。等到前后端联调的时候，再设置为false，然后所有的请求就会按照真实的后端接口地址来发送请求。</p>
+<h2 id="随机数据"><a href="#随机数据" class="headerlink" title="随机数据"></a>随机数据</h2><p>mockjs可以随机地模拟各类的数据，常用的包括日期时间、城市省份、姓名、颜色、关键字、email、句子段落、甚至可以按尺寸模拟图片、带文字的图片等等。这里就举一个简单例子，更多种类的数据可以查看官方文档。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> data = Mock.mock(&#123;</span><br><span class="line">    <span class="string">'code'</span>: <span class="number">200</span>,</span><br><span class="line">    <span class="string">'message'</span>: <span class="string">'success'</span>,</span><br><span class="line">    <span class="string">'data'</span>: &#123;</span><br><span class="line">        <span class="string">'list|5-10'</span>: [&#123;     <span class="comment">// 随机返回一个包含5到10个对象的数组</span></span><br><span class="line">            <span class="string">'num|0-100'</span>: <span class="number">0</span>, <span class="comment">// 随机返回一个0到100的整数</span></span><br><span class="line">            <span class="string">'name'</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123; <span class="comment">// 随机返回一个姓名</span></span><br><span class="line">                <span class="keyword">return</span> Mock.mock(<span class="string">'@cname'</span>)</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">'date'</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123; <span class="comment">// 随机返回一个指定格式的日期</span></span><br><span class="line">                <span class="keyword">return</span> Mock.Random.date(<span class="string">'yyyy-MM-dd'</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;],</span><br><span class="line">        <span class="string">'img'</span>: Mock.Random.image(<span class="string">'450x400'</span>, <span class="string">'#50B347'</span>, <span class="string">'#FFF'</span>, <span class="string">'Hello!Mock.js!'</span>)</span><br><span class="line">        <span class="comment">// 返回指定尺寸、颜色和文字的一张图</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>mockjs在模拟数据这一块非常的方便，甚至有时候mockjs模拟的数据比联调的时候，后端在开发环境数据库里模拟的数据更全面、情况更多。前端在拿到接口格式后，可以独立于后端进行开发，并且前后端的开发进度基本上不会相互影响，联调成本也会大大降低。但是在实际的应用中，我还是发现mockjs存在一些坑点，毕竟这个库的GitHub上issues还是挺多的。</p>
+<h2 id="坑点1：get请求不能传参"><a href="#坑点1：get请求不能传参" class="headerlink" title="坑点1：get请求不能传参"></a>坑点1：get请求不能传参</h2><p>mockjs只会拦截你的请求，但不会对你请求发送的参数进行任何验证处理等。所以在模拟post请求数据时，我可以按照真实接口的请求方式，把请求的参数完整的写在代码里，因为无论发送什么参数，数据都会按照mock的格式正确返回。</p>
+<p>但是，我在模拟get请求的时候，如果携带上接口需要的参数，get请求会将参数加载请求的url后面。例如，我在<code>mock.js</code>中设置的接口是<code>//mock/base/getSomeData</code>,然后发送get请求并携带参数后，真实地址变成了<code>//mock/base/getSomeData?userId=12345</code>。这个时候我发现mockjs就没办法正确的返回mock数据了，我查阅了mockjs文档，有看到关于get请求的模拟，但是尝试之后发现任然没用，所以我就只能在封装get请求的时候，判断一下当前状态是mock状态还是非mock状态，如果是mock状态就不携带参数，虽然方法有点笨，但也算是解决了这个问题，并且在联调的时候，不需要修改业务逻辑层的代码。如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> mock = <span class="literal">true</span> <span class="comment">// false</span></span><br><span class="line"><span class="keyword">let</span> baseURL = mock ? <span class="string">'//mock/'</span> : <span class="string">`//activity.f***s.cn/`</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">    get(url, params) &#123;</span><br><span class="line">        <span class="keyword">return</span> Axios(&#123;</span><br><span class="line">            url: url,</span><br><span class="line">            method: <span class="string">'get'</span>,</span><br><span class="line">            baseURL: baseURL,</span><br><span class="line">            params: mock ? &#123;&#125; : params,</span><br><span class="line">            withCredentials: <span class="literal">true</span></span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="坑点2：无法携带cookie"><a href="#坑点2：无法携带cookie" class="headerlink" title="坑点2：无法携带cookie"></a>坑点2：无法携带cookie</h2><p>这个坑就厉害了，曾经整整折磨了我一个下午。。。。。。</p>
+<p>前不久，在开发一个后台管理项目的时候，后端写好了一个用户信息验证接口准备和我一起调试一下，这个接口需要携带cookie。我就从mock模式切换到非mock模式，仅仅修改了封装请求的js文件中的<code>let mock = false</code>，然后我就天真地以为，可以顺利的调试正式接口了。但我发现我前端请求头设置了<code>withCredentials: true</code>，后端响应头也设置了<code>&#39;Access-Control-Allow-Credentials&#39;, &#39;true&#39;</code>，但是发送的请求就是死活携带不上cookie 🙂我和隔壁组两个前端，三个人花了大半个下午的时间，最后发现是引用了mockjs模块的原因。后来去GitHub上搜了mockjs的源码，搜索出来这么一行。</p>
+<p><img src="/2018/04/24/2fe-mock/fe-mock/withCredentials.jpg" alt="mockjs"></p>
+<p>然后我当时就心里MMP了🙂。。。<br>它拦截了我的请求，并且修改了<code>withCredentials</code>，所以cookie携带不上。我的所以下次“切换非mock模式”的时候，还需要注释掉<code>require(&#39;mockjs)</code>，也算是吃一堑长一智吧。</p>
+<h1 id="Express-Mockjs"><a href="#Express-Mockjs" class="headerlink" title="Express+Mockjs"></a>Express+Mockjs</h1><p>express是一个基于Node.js平台的web开发框架。<br>mockjs模拟数据固然很方便，但它仅仅使用来模拟接口数据的，如果想把前端数据mock的过程更真实，更接近正式的请求，那可以结合express来起一个后端服务器，模拟整个请求的发送接收过程。</p>
+<h2 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h2><p>新建一个mock服务端的小demo，安装mockjs和express：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install express mockjs --save-dev</span><br></pre></td></tr></table></figure>
+<h2 id="搭建服务"><a href="#搭建服务" class="headerlink" title="搭建服务"></a>搭建服务</h2><p>新建一个<code>server.js</code>文件:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>)</span><br><span class="line"><span class="keyword">let</span> app = express()</span><br><span class="line"></span><br><span class="line">app.all(<span class="string">'/api/demo'</span>, (req, res) =&gt; &#123;</span><br><span class="line">    res.send(<span class="string">'Mock!! This is MockData!!'</span>)</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">let</span> server = app.listen(<span class="number">9999</span>, () =&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> port = server.address().port</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'server running successful...'</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`server listening at http://localhost:<span class="subst">$&#123;port&#125;</span>`</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>运行<code>node server.js</code>把服务跑起来后，浏览器打开<code>http://localhost:9999/api/demo</code>，可以看到<code>Mock!! This is MockData!!</code>。</p>
+<h2 id="引入mockjs"><a href="#引入mockjs" class="headerlink" title="引入mockjs"></a>引入mockjs</h2><p>修改<code>server.js</code>文件，把前面介绍的mockjs模拟的数据，并放到response中:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>)</span><br><span class="line"><span class="keyword">let</span> Mock = <span class="built_in">require</span>(<span class="string">'mockjs'</span>)</span><br><span class="line"><span class="keyword">let</span> app = express()</span><br><span class="line"></span><br><span class="line">app.all(<span class="string">'/api/demo'</span>, (req, res) =&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> data = Mock.mock(&#123;</span><br><span class="line">        <span class="string">'code'</span>: <span class="number">200</span>,</span><br><span class="line">        <span class="string">'message'</span>: <span class="string">'success'</span>,</span><br><span class="line">        <span class="string">'data'</span>: &#123;</span><br><span class="line">            <span class="string">'list|5-10'</span>: [&#123;     <span class="comment">// 随机返回一个包含5到10个对象的数组</span></span><br><span class="line">                <span class="string">'num|0-100'</span>: <span class="number">0</span>, <span class="comment">// 随机返回一个0到100的整数</span></span><br><span class="line">                <span class="string">'name'</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123; <span class="comment">// 随机返回一个姓名</span></span><br><span class="line">                    <span class="keyword">return</span> Mock.mock(<span class="string">'@cname'</span>)</span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="string">'date'</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123; <span class="comment">// 随机返回一个指定格式的日期</span></span><br><span class="line">                    <span class="keyword">return</span> Mock.Random.date(<span class="string">'yyyy-MM-dd'</span>)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;],</span><br><span class="line">            <span class="string">'img'</span>: Mock.Random.image(<span class="string">'450x400'</span>, <span class="string">'#50B347'</span>, <span class="string">'#FFF'</span>, <span class="string">'Hello!Mock.js!'</span>)</span><br><span class="line">            <span class="comment">// 返回指定尺寸、颜色和文字的一张图</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">    res.json(data)</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">let</span> server = app.listen(<span class="number">9999</span>, () =&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> port = server.address().port</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'server running successfully...'</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`server listening at http://localhost:<span class="subst">$&#123;port&#125;</span>`</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>浏览器访问<code>http://localhost:9999/api/demo</code>后可以看到相应的模拟数据。</p>
+<h2 id="修改前端请求封装"><a href="#修改前端请求封装" class="headerlink" title="修改前端请求封装"></a>修改前端请求封装</h2><p>有了前面的思路，我们修改前端项目封装请求的文件：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> mock = <span class="literal">true</span> <span class="comment">// true</span></span><br><span class="line"><span class="keyword">let</span> baseURL = mock ? <span class="string">'//localhost:9999/'</span> : <span class="string">`//activity.f***s.cn/`</span></span><br></pre></td></tr></table></figure>
+<p>即在“mock模式下”，前端的请求全都去请求本地的<code>9999</code>端口的服务。</p>
+<h2 id="完善mock服务端"><a href="#完善mock服务端" class="headerlink" title="完善mock服务端"></a>完善mock服务端</h2><p>然后，我们再把mock服务端项目完善一下。为了方便和后端的正式接口一一对应，我在mock服务端项目新建一个mockApi文件夹，并在里面按照正式接口的名称层级，创建每个接口对应的mock文件。例如，有个名称为<code>/base/getUserInfoFromPC</code>的接口，就在<code>./mockApi/base</code>目录下新建getUserInfoFromPC.js文件，添加如下代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> Mock = <span class="built_in">require</span>(<span class="string">'mockjs'</span>)</span><br><span class="line"><span class="keyword">let</span> data = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Mock.mock(&#123;</span><br><span class="line">        <span class="string">'code'</span>: <span class="number">200</span>,</span><br><span class="line">        <span class="string">'data'</span>: &#123;</span><br><span class="line">            <span class="string">'nickName'</span>: <span class="string">'alexixiang'</span>,</span><br><span class="line">            <span class="string">'id'</span>: <span class="number">1707000766</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">module</span>.exports = data</span><br></pre></td></tr></table></figure>
+<p>然后修改server.js文件：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>)</span><br><span class="line"><span class="keyword">let</span> app = express()</span><br><span class="line"><span class="keyword">let</span> baseRoot = <span class="string">'./mockApi'</span> <span class="comment">// mock数据文件夹路径</span></span><br><span class="line">app.post(<span class="string">'/base/getUserInfoFromPC'</span>, (req, res) =&gt; &#123;</span><br><span class="line">    res.json(<span class="built_in">require</span>(<span class="string">`<span class="subst">$&#123;baseRoot&#125;</span>/base/getUserInfoFromPC.js`</span>)())</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">let</span> server = app.listen(<span class="number">9999</span>, () =&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> port = server.address().port</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'server running successfully...'</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`server listening at http://localhost:<span class="subst">$&#123;port&#125;</span>`</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>然后在开发中，本地需要跑两个服务，一个是mock服务端，另一个是本地的前端页面。通常两个服务的端口不一样，存在跨域问题，所以还需要在<code>server.js</code>中添加配置跨域，如果需要携带cookie还需要设置<code>&#39;Access-Control-Allow-Credentials&#39;, &#39;true&#39;</code>:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 中间件</span></span><br><span class="line">app.use(<span class="function">(<span class="params">req, res, next</span>) =&gt;</span> &#123;</span><br><span class="line">    res.header(<span class="string">'Access-Control-Allow-Origin'</span>, req.headers.origin)</span><br><span class="line">    res.header(<span class="string">'Access-Control-Allow-Headers'</span>, <span class="string">'Content-Type'</span>)</span><br><span class="line">    res.header(<span class="string">'Access-Control-Allow-Methods'</span>, <span class="string">'PUT, GET, POST, DELETE, OPTIONS'</span>)</span><br><span class="line">    res.header(<span class="string">'Access-Control-Allow-Credentials'</span>, <span class="string">'true'</span>)</span><br><span class="line">    next()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>至此，利用express和mockjs搭建的mock服务端就基本完成了。我觉得这种方法相比于第一种方法好处有以下几点：</p>
+<ul>
+<li>前面讲到的两个坑点，不会再出现了。</li>
+<li>mock代码都在mock服务端写，前端项目不写mock相关代码。把前端项目的业务逻辑、接口请求和mock数据的代码独立开来，不会相互影响。</li>
+<li>而且在mock服务端还可以对请求的传参进行一些简单的判断和处理等，从而让整个mock数据的过程更接近正式联调接口的状态。</li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>前端数据mock本身是一个可大可小、可繁可简的开发流程。但是在实际开发中，一个新的项目通常都是前后端同时进行开发，为了降低前后端接口联调的成本，提高联调效率，完善前端mock数据和mock接口请求的过程是很有必要的。<br>前端mock的方法就简单介绍到这里，欢迎各位大佬批评指正。</p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ul>
+<li>mock：<a href="http://mockjs.com/" target="_blank" rel="noopener">http://mockjs.com/</a></li>
+<li>express：<a href="http://www.expressjs.com.cn/" target="_blank" rel="noopener">http://www.expressjs.com.cn/</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>↘↘👻我不要脸👻↙↙</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="AlexiXiang 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="AlexiXiang 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/share/" rel="tag"># share</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/07/1vuex/" rel="next" title="VUEX学习笔记">
+                <i class="fa fa-chevron-left"></i> VUEX学习笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/04/3mpvue/" rel="prev" title="初探微信小程序——mpvue踩坑总结">
+                初探微信小程序——mpvue踩坑总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8zNDM3My8xMDkxMA=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="AlexiXiang">
+            
+              <p class="site-author-name" itemprop="name">AlexiXiang</p>
+              <p class="site-description motion-element" itemprop="description">Look ahead to the day you die.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alexixyc" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:alexixyc@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/profile.php?id=100019367790425" target="_blank" title="FB Page">
+                      
+                        <i class="fa fa-fw fa-facebook"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.youtube.com/channel/UC6UTrplKuiGOwuqF4znDWAg?view_as=subscriber" target="_blank" title="YouTube">
+                      
+                        <i class="fa fa-fw fa-youtube"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.instagram.com/alexi_xiang/" target="_blank" title="Instagram">
+                      
+                        <i class="fa fa-fw fa-instagram"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://dribbble.com/alexi_xiang" target="_blank" title="dribbble">
+                      
+                        <i class="fa fa-fw fa-dribbble"></i></a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前端数据模拟"><span class="nav-number">1.</span> <span class="nav-text">前端数据模拟</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MockJs"><span class="nav-number">2.</span> <span class="nav-text">MockJs</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装"><span class="nav-number">2.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简单用法"><span class="nav-number">2.2.</span> <span class="nav-text">简单用法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#随机数据"><span class="nav-number">2.3.</span> <span class="nav-text">随机数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#坑点1：get请求不能传参"><span class="nav-number">2.4.</span> <span class="nav-text">坑点1：get请求不能传参</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#坑点2：无法携带cookie"><span class="nav-number">2.5.</span> <span class="nav-text">坑点2：无法携带cookie</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Express-Mockjs"><span class="nav-number">3.</span> <span class="nav-text">Express+Mockjs</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装-1"><span class="nav-number">3.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#搭建服务"><span class="nav-number">3.2.</span> <span class="nav-text">搭建服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引入mockjs"><span class="nav-number">3.3.</span> <span class="nav-text">引入mockjs</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#修改前端请求封装"><span class="nav-number">3.4.</span> <span class="nav-text">修改前端请求封装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#完善mock服务端"><span class="nav-number">3.5.</span> <span class="nav-text">完善mock服务端</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考文献"><span class="nav-number">5.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AlexiXiang</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

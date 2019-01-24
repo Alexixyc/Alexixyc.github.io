@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="share,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="&amp;emsp;&amp;emsp;前段时间，在第一次接触小程序开发的项目中，使用了美团的小程序框架mpvue。本文旨在给大家分享一些，自己在第一次接触小程序开发时遇到的一些常见需求的解决办法，以及在使用mpvue框架时踩过的坑，希望能帮助到大家。">
+<meta name="keywords" content="share">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初探微信小程序——mpvue踩坑总结">
+<meta property="og:url" content="http://alexixyc.cn/2018/08/04/3mpvue/index.html">
+<meta property="og:site_name" content="AlexiXiang’s Blog">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;前段时间，在第一次接触小程序开发的项目中，使用了美团的小程序框架mpvue。本文旨在给大家分享一些，自己在第一次接触小程序开发时遇到的一些常见需求的解决办法，以及在使用mpvue框架时踩过的坑，希望能帮助到大家。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://alexixyc.cn/2018/08/04/3mpvue/wechat.png">
+<meta property="og:image" content="http://alexixyc.cn/2018/08/04/3mpvue/api-login.jpg">
+<meta property="og:image" content="http://alexixyc.cn/2018/08/04/3mpvue/compile-mode.jpg">
+<meta property="og:updated_time" content="2018-10-18T03:46:36.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="初探微信小程序——mpvue踩坑总结">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;前段时间，在第一次接触小程序开发的项目中，使用了美团的小程序框架mpvue。本文旨在给大家分享一些，自己在第一次接触小程序开发时遇到的一些常见需求的解决办法，以及在使用mpvue框架时踩过的坑，希望能帮助到大家。">
+<meta name="twitter:image" content="http://alexixyc.cn/2018/08/04/3mpvue/wechat.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://alexixyc.cn/2018/08/04/3mpvue/">
+
+
+
+
+
+  <title>初探微信小程序——mpvue踩坑总结 | AlexiXiang’s Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AlexiXiang’s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://alexixyc.cn/2018/08/04/3mpvue/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AlexiXiang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AlexiXiang’s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">初探微信小程序——mpvue踩坑总结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-04T12:18:04+08:00">
+                2018-08-04
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-10-18T11:46:36+08:00">
+                2018-10-18
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/share/" itemprop="url" rel="index">
+                    <span itemprop="name">share</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.7k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  10
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="/2018/08/04/3mpvue/./wechat.png" width="400px"><br>&emsp;&emsp;前段时间，在第一次接触小程序开发的项目中，使用了美团的小程序框架mpvue。本文旨在给大家分享一些，自己在第一次接触小程序开发时遇到的一些常见需求的解决办法，以及在使用mpvue框架时踩过的坑，希望能帮助到大家。</p>
+<a id="more"></a>
+<hr>
+<h1 id="小程序常见需求"><a href="#小程序常见需求" class="headerlink" title="小程序常见需求"></a>小程序常见需求</h1><h2 id="登录"><a href="#登录" class="headerlink" title="登录"></a>登录</h2><blockquote>
+<p>常用参数<br>&emsp;&emsp;code：调用wx.login() 获取的用户登录凭证（有效期5min）<br>&emsp;&emsp;session_key：会话密钥<br>&emsp;&emsp;openid：用户唯一标识<br>&emsp;&emsp;unionid：用户在开放平台的唯一标识符</p>
+</blockquote>
+<blockquote>
+<p>登录流程图<br><img src="/2018/08/04/3mpvue/./api-login.jpg" width="500px"></p>
+</blockquote>
+<h3 id="普通登录"><a href="#普通登录" class="headerlink" title="普通登录"></a>普通登录</h3><ol>
+<li>小程序客户端调用wx.login()获取code。</li>
+<li>发送code至开发者服务端，开发者后端调用<a href="https://api.weixin.qq.com/sns/jscode2session?appid=APPID&amp;secret=SECRET&amp;js_code=JSCODE&amp;grant_type=authorization_code" title="获取openid，session_key（后端调用）" target="_blank" rel="noopener">微信服务端接口</a>获取openid、session_key(在满足一定<a href="https://developers.weixin.qq.com/miniprogram/dev/api/unionID.html" title="UnionID机制说明" target="_blank" rel="noopener">条件</a>下还会返回UnionID)。</li>
+<li>开发者服务端自定义登录状态，返回小程序客户端一个token，当做用户的登录状态。</li>
+<li>小程序客户端存储token，在后续的业务请求接口中携带token，作用类似于web中的cookie。</li>
+</ol>
+<h3 id="绑定手机号登录"><a href="#绑定手机号登录" class="headerlink" title="绑定手机号登录"></a>绑定手机号登录</h3><p>&emsp;&emsp;绑定手机号登录其实就是将用户手机号和用户的openid绑定起来存入数据库，其实登录流程也是和普通的登录流程一样，唯一的区别就是，第一次绑定的时候，需要首先让用户授权获取手机号。</p>
+<h2 id="微信授权用户手机号"><a href="#微信授权用户手机号" class="headerlink" title="微信授权用户手机号"></a>微信授权用户手机号</h2><p>&emsp;&emsp;相对于用户头像昵称来说，用户手机号是一个更隐私的用户信息，所以手机号的授权操作会繁琐一些，并且需要后端的支持。<code>getPhoneNumber(OBJECT)</code>需要用户主动触发才能发起获取手机号接口，所以该功能不由API来调用，需用<code>&lt;button&gt;</code>组件的点击来触发。</p>
+<ol>
+<li>小程序客户端调用wx.login()获取code。</li>
+<li>设置<code>&lt;button&gt;</code>组件<code>open-type</code>的值设置为<code>getPhoneNumber</code>，用户点击并同意授权后，通过<code>bindgetphonenumber</code>事件回调获取到微信服务器返回的加密数据。</li>
+</ol>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">button</span> <span class="attr">open-type</span>=<span class="string">"getPhoneNumber"</span> <span class="attr">bindgetphonenumber</span>=<span class="string">"getPhoneNumber"</span>&gt;</span></span><br><span class="line">    微信授权登录</span><br><span class="line"><span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">getPhoneNumber(e) &#123;</span><br><span class="line">    <span class="keyword">if</span> (e.mp.detail.encryptedData) &#123;</span><br><span class="line">        <span class="comment">// 授权成功 将encryptedData和iv发送给开发者服务端</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 拒绝收取，做相应的逻辑处理</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>小程序客户端将加密数据和code一同发送给开发者服务器端。</li>
+<li>开发者服务端将，根据code获取openid，和通过加密数据、以及微信提供的<a href="https://developers.weixin.qq.com/miniprogram/dev/api/signature.html#wxchecksessionobject" title="加密数据解密算法" target="_blank" rel="noopener">加密数据解密算法</a>得到的用户手机号绑定在一起插入数据库。</li>
+</ol>
+<p>注意：目前该接口针对非个人开发者，且完成了认证的小程序开放。需谨慎使用，若用户举报较多或被发现在不必要场景下使用，微信有权永久回收该小程序的该接口权限。</p>
+<h2 id="微信授权用户信息"><a href="#微信授权用户信息" class="headerlink" title="微信授权用户信息"></a>微信授权用户信息</h2><p>&emsp;&emsp;微信小程序可以通过调用<code>wx.getUserInfo(OBJECT)</code>来获取用户头像，昵称等基本的微信账号信息。这个功能很常见，一般是用于展示用户的微信头像和昵称。<br>&emsp;&emsp;但有一点要注意的就是，最新的小程序api中，不支持直接引导用户授权用户信息了。也就是说，如果用户没有授权过用户信息的话，直接调用<code>wx.getUserInfo()</code>将不会再弹出授权弹窗了。微信推荐的方法是，设置<code>&lt;button&gt;</code>组件的<code>open-type</code>属性为<code>getUserinfo</code>，引导用户主动的点击按钮来进行授权操作。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">button</span> <span class="attr">open-type</span>=<span class="string">"getUserInfo"</span> <span class="attr">bindgetuserinfo</span>=<span class="string">"onGotUserInfo"</span>&gt;</span></span><br><span class="line">    分享喜悦给好友</span><br><span class="line"><span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这个变化目前对已发布的小程序暂时没有影响，但是【开发版】和【体验版】小程序，已经有了限制。<strong><code>所以，如果小程序需要授权用户基本信息，在设计时，需要设计一个用户按钮点击的交互。</code></strong></p>
+<h2 id="下拉刷新、上拉加载"><a href="#下拉刷新、上拉加载" class="headerlink" title="下拉刷新、上拉加载"></a>下拉刷新、上拉加载</h2><blockquote>
+<p>小程序自带下拉刷新：<br>&emsp;&emsp;在页面json配置中开启<code>enablePullDownRefresh</code>选项<br>然后在函数<code>onPullDownRefresh()</code>中监听用户下拉刷新事件，处理完刷新数据后再用<code>wx.stopPullDownRefresh()</code>停止当前页面的下拉刷新。</p>
+</blockquote>
+<blockquote>
+<p>scroll-view下拉刷新<br>&emsp;&emsp;但是如果当前页面使用了<code>scroll-view</code>组件，这种自带的下拉刷新是不能用的。这种情况下就只能通过监听<code>scroll-view</code>组件的<code>bindscroll、以及bindtouchend、bindtouchstart</code>等事件来手动实现下拉刷新。</p>
+</blockquote>
+<h2 id="微信分享（群-私聊）"><a href="#微信分享（群-私聊）" class="headerlink" title="微信分享（群/私聊）"></a>微信分享（群/私聊）</h2><p>&emsp;&emsp;分享功能应该可以说是每款小程序比不可少功能了，小程序支持分享到聊天回话，不支持直接分享到朋友圈。小程序的分享有几个特点：页面可配置、文字/图片可配置、可携带参数。</p>
+<p>&emsp;&emsp;首先，设置<code>&lt;button&gt;</code>组件的<code>open-type</code>属性为<code>share</code></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">button</span> <span class="attr">open-type</span>=<span class="string">"share"</span>&gt;</span>分享转发<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;然后通过<code>onShareAppMessage(Object)</code>事件来监听用户点击转发按钮的事件，并自定义转发的内容。（如果当前页面没有定义此事件，则点击后无效果）<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Page(&#123;</span><br><span class="line">    onShareAppMessage: <span class="function"><span class="keyword">function</span> (<span class="params">res</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (res.from === <span class="string">'button'</span>) &#123;</span><br><span class="line">            <span class="comment">// 来自页面内转发按钮 button || menu</span></span><br><span class="line">            <span class="keyword">return</span> &#123;</span><br><span class="line">                title: <span class="string">'自定义转发标题'</span>,</span><br><span class="line">                path: <span class="string">'/page/sharepage?id=123'</span>,</span><br><span class="line">                imageUrl: <span class="string">'xxx.png'</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> &#123;</span><br><span class="line">                title: <span class="string">'自定义转发标题'</span>,</span><br><span class="line">                path: <span class="string">'/page/sharepage?id=123'</span>,</span><br><span class="line">                imageUrl: <span class="string">'xxx.png'</span>,</span><br><span class="line">                success: <span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">                    <span class="built_in">console</span>.log(<span class="string">'转发成功~'</span>)</span><br><span class="line">                &#125;,</span><br><span class="line">                fail: <span class="function"><span class="params">error</span> =&gt;</span> &#123;</span><br><span class="line">                    <span class="built_in">console</span>.log(<span class="string">'转发失败'</span>, error)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;我们看到分享时，可以传入参数自定义分享卡片的标题，图片以及从卡片进入时跳转的页面路径。在官方文档上没有看到有写关于分享成功或者失败的回调，但我试了一下，是有的，可能是文档上漏了。这两个回调可以帮助我们在分享操作结束后，根据分享结果做一些不同的操作和处理。</p>
+<p>&emsp;&emsp;其次，通过设置 <code>withShareTicket</code> 可以获取更多转发信息。在群聊中打开分享卡片时，可以取到<code>shareTicket</code>，通过调用 <code>wx.getShareInfo()</code> 接口，传入 <code>shareTicket</code> 可以获取到转发信息。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ps: 如果设置了withShareTicket: true，在聊天对话中，长按分享发片是不可以直接二次转发的。</span></span><br><span class="line">wx.showShareMenu(&#123;</span><br><span class="line">    withShareTicket: <span class="literal">true</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>&emsp;&emsp;但是如果遇到一个需求，要让你区别是分享到群还是分享到私聊回话，怎么办呢？其实，在分享的这一步，是没办法判断用户到底分享给谁的，所以只能在进入小程序的时候，根据场景值来判断了。</p>
+<h2 id="场景值"><a href="#场景值" class="headerlink" title="场景值"></a>场景值</h2><p>&emsp;&emsp;<a href="https://developers.weixin.qq.com/miniprogram/en/dev/framework/app-service/scene.html?search-key=%E5%9C%BA%E6%99%AF%E5%80%BC" title="小程序场景值" target="_blank" rel="noopener">场景值</a>可以用来判断小程序是从哪个场景下被打开的。场景值可以在 App 的 <code>onlaunch</code> 和 <code>onshow</code> 中获取到。根据不同的场景值，可以知道用户是从群聊还是私聊对话中进入小程序，从而可以做一些不同的逻辑处理。</p>
+<h2 id="小程序二维码生成"><a href="#小程序二维码生成" class="headerlink" title="小程序二维码生成"></a>小程序二维码生成</h2><p>&emsp;&emsp;小程序二维码的生成官方提供了三种<a href="https://developers.weixin.qq.com/miniprogram/dev/api/qrcode.html?search-key=%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%A0%81" target="_blank" rel="noopener">接口</a>，分别有不同的特点，可以根据需求来选择接口。官方的描述是：</p>
+<blockquote>
+<p>A接口:生成小程序码，可接受path参数较长，生成个数受限。<br>B接口:生成小程序码，可接受页面参数较短，生成个数不受限。<br>C接口:生成二维码，可接受path参数较长，生成个数受限。</p>
+</blockquote>
+<p>&emsp;&emsp;生成二维码的操作一般是开发者服务端来完成的，微信官方推荐生成并使用小程序码，而其中B接口又是最常用的，因为B接口生成的小程序码永久有效且不限制个数。<br>&emsp;&emsp;需要注意的几点:</p>
+<ul>
+<li>B接口的路径不携带参数，参数都需要放在 <code>scene</code> 字段里，在 <code>onLoad()</code> 中可以获取到二维码中的 <code>scene</code> 字段的值</li>
+<li><code>page</code> 参数指定的路径必须是已经发布的小程序存在的页面，否则报错</li>
+<li>调试阶段可以使用开发工具的条件编译自定义参数 <code>scene=xxxx</code> 进行模拟</li>
+</ul>
+<p><img src="/2018/08/04/3mpvue/./compile-mode.jpg" width="600px"></p>
+<h2 id="其他小问题"><a href="#其他小问题" class="headerlink" title="其他小问题"></a>其他小问题</h2><h3 id="tabBar"><a href="#tabBar" class="headerlink" title="tabBar"></a>tabBar</h3><p>如果使用小程序提供的自带的tab栏，根据官方文档进行配置即可，tab栏的页面配置最少2个、最多5个。</p>
+<blockquote>
+<p>唯一需要注意的一点是：小程序的首页必须配置在这几个tab栏中，否则就不能使用官方的tabBar，而只能手写tabBar，这点在设计的时候需要注意一下。</p>
+</blockquote>
+<p>关于手动实现tabBar，遇到了一个问题，就是在切换tab标签时，会用 <code>wx.redirectTo()</code> 进行整个page页面之间的跳转，有的时候底部的tab栏就会出现闪烁的问题，暂时没想到更好的方案。</p>
+<h3 id="图片-字体的引用"><a href="#图片-字体的引用" class="headerlink" title="图片/字体的引用"></a>图片/字体的引用</h3><p>&emsp;&emsp;由于小程序代码包大小上限是2M，所以建议不要引用本地图片字体，全部改成引用网络资源，也不要静态资源打包到小程序的代码包里。</p>
+<h3 id="WXSS"><a href="#WXSS" class="headerlink" title="WXSS"></a>WXSS</h3><ul>
+<li><p>WXSS中background-image只支持网络图片，或者base64格式的图片。</p>
+</li>
+<li><p>新增了尺寸单位rpx，开发者不需要考虑设配问题，全都交给小程序底层来换算。</p>
+</li>
+<li><p>WXSS不再支持媒体查询，通过 <code>wx.getSystemInfo()</code> 来获取设备信息。</p>
+</li>
+</ul>
+<h1 id="mpvue"><a href="#mpvue" class="headerlink" title="mpvue"></a>mpvue</h1><p><br><a href="http://mpvue.com/mpvue/" target="_blank" rel="noopener">mpvue</a> 继承自 <code>Vue.js</code>，其技术规范和语法特点与 <code>Vue.js</code> 保持一致。</p>
+<h2 id="开始项目"><a href="#开始项目" class="headerlink" title="开始项目"></a>开始项目</h2><ol>
+<li><p>新建项目模板</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建一个基于 mpvue-quickstart 模板的新项目</span></span><br><span class="line">vue init mpvue/mpvue-quickstart my-project</span><br><span class="line">npm install</span><br><span class="line">npm run dev</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>微信开发者工具中选择项目dist目录</p>
+</li>
+</ol>
+<h2 id="踩坑总结"><a href="#踩坑总结" class="headerlink" title="踩坑总结"></a>踩坑总结</h2><ul>
+<li><p>新建pages后，需要重新 npm run dev 一下。</p>
+</li>
+<li><p>mpvue 中使用 vuex: </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Vue.prototype.$store = store</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>不支持vue-router</p>
+</li>
+<li><p>在引用子组件时，不支持在组件上定义v-show，只能使用v-if替代。</p>
+</li>
+<li><p>不支持组件上定义class，style等样式属性，建议写在内部顶级元素上。</p>
+</li>
+<li><p>小程序在 <code>page</code> <code>onLoad</code> 时传递的 <code>options</code> , 可以在所有页面的组件内通过 <code>this.$root.$mp.query</code> 获取到。</p>
+</li>
+<li><p>小程序在 <code>app</code> <code>onLaunch/onShow</code> 时传递的 <code>options</code> , 可以在所有页面的组件内通过 <code>this.$root.$mp.appOptions</code> 获取到。</p>
+</li>
+<li><p>不支持transition过渡</p>
+</li>
+<li><p>设置横向滑动：</p>
+<blockquote>
+<p>设置横向滑动 scroll-x=”true”;<br>scroll-view需要设置宽度，并且设置white-space属性为nowrap;<br>item设置display: inline-block属性;</p>
+</blockquote>
+</li>
+<li><p>引用网络字体文件时，开发工具上可以支持http、但真机上只能引用https文件。</p>
+</li>
+<li><p>定义vue组件名时需要注意，<a href="http://mpvue.com/qa/#_3" target="_blank" rel="noopener">一些保留关键字</a>，暂不支持作为组件名称。（自定义tabbar时遇到的大坑！！！）</p>
+</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>↘↘👻我不要脸👻↙↙</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="AlexiXiang 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="AlexiXiang 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/share/" rel="tag"># share</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/24/2fe-mock/" rel="next" title="前端数据Mock---Express + Mockjs">
+                <i class="fa fa-chevron-left"></i> 前端数据Mock---Express + Mockjs
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/18/4ax-view/" rel="prev" title="UI组件🔧Ax-View">
+                UI组件🔧Ax-View <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8zNDM3My8xMDkxMA=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="AlexiXiang">
+            
+              <p class="site-author-name" itemprop="name">AlexiXiang</p>
+              <p class="site-description motion-element" itemprop="description">Look ahead to the day you die.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alexixyc" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:alexixyc@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/profile.php?id=100019367790425" target="_blank" title="FB Page">
+                      
+                        <i class="fa fa-fw fa-facebook"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.youtube.com/channel/UC6UTrplKuiGOwuqF4znDWAg?view_as=subscriber" target="_blank" title="YouTube">
+                      
+                        <i class="fa fa-fw fa-youtube"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.instagram.com/alexi_xiang/" target="_blank" title="Instagram">
+                      
+                        <i class="fa fa-fw fa-instagram"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://dribbble.com/alexi_xiang" target="_blank" title="dribbble">
+                      
+                        <i class="fa fa-fw fa-dribbble"></i></a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#小程序常见需求"><span class="nav-number">1.</span> <span class="nav-text">小程序常见需求</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#登录"><span class="nav-number">1.1.</span> <span class="nav-text">登录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#普通登录"><span class="nav-number">1.1.1.</span> <span class="nav-text">普通登录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#绑定手机号登录"><span class="nav-number">1.1.2.</span> <span class="nav-text">绑定手机号登录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#微信授权用户手机号"><span class="nav-number">1.2.</span> <span class="nav-text">微信授权用户手机号</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#微信授权用户信息"><span class="nav-number">1.3.</span> <span class="nav-text">微信授权用户信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#下拉刷新、上拉加载"><span class="nav-number">1.4.</span> <span class="nav-text">下拉刷新、上拉加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#微信分享（群-私聊）"><span class="nav-number">1.5.</span> <span class="nav-text">微信分享（群/私聊）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#场景值"><span class="nav-number">1.6.</span> <span class="nav-text">场景值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小程序二维码生成"><span class="nav-number">1.7.</span> <span class="nav-text">小程序二维码生成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他小问题"><span class="nav-number">1.8.</span> <span class="nav-text">其他小问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tabBar"><span class="nav-number">1.8.1.</span> <span class="nav-text">tabBar</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#图片-字体的引用"><span class="nav-number">1.8.2.</span> <span class="nav-text">图片/字体的引用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WXSS"><span class="nav-number">1.8.3.</span> <span class="nav-text">WXSS</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mpvue"><span class="nav-number">2.</span> <span class="nav-text">mpvue</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#开始项目"><span class="nav-number">2.1.</span> <span class="nav-text">开始项目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#踩坑总结"><span class="nav-number">2.2.</span> <span class="nav-text">踩坑总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AlexiXiang</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
