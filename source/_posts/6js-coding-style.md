@@ -182,68 +182,6 @@ const foo = document.querySelectorAll('.foo');
 const nodes = Array.from(foo);
 ```
 
-### 函数
-立即执行的函数可以写成箭头函数形式。
-
-需要使用函数表达式的场合，尽量用箭头函数代替。
-```js
-// best
-let a = [1, 2, 3].map(x => x * x);
-```
-
-用箭头函数取代Function.prototype.bind，简单的、单行的、不会复用的函数，建议使用箭头函数。
-```js
-// bad
-const self = this;
-const boundMethod = function(...params) {
-  return method.apply(self, params);
-}
-
-// acceptable
-const boundMethod = method.bind(this);
-
-// best
-const boundMethod = (...params) => method.apply(this, params);
-```
-
-函数所有配置项option都应该集中在一个对象中，并且放在函数的最后一参数中，布尔值不要直接当做参数。
-```js
-// bad
-function divide(a, b, option = false ) {
-}
-
-// good
-function divide(a, b, { option = false } = {}) {
-}
-```
-
-不要在函数体内使用arguments变量，使用rest运算符（扩展运算符的逆运算）代替。因为arguments是一个类数组对象，而rest运算符提供的是一个真正的数组。
-```js
-// bad
-function concatenateAll() {
-  const args = Array.prototype.slice.call(arguments);
-  return args.join('');
-}
-
-// good
-function concatenateAll(...args) {
-  return args.join('');
-}
-```
-
-使用默认值语法设置函数参数的默认值，而不是在函数内部设置。
-```js
-// bad
-function handleThings(opts) {
-  opts = opts || {};
-}
-
-// good
-function handleThings(opts = {}) {
-  // ...
-}
-```
-
 ### Map结构
 注意区分Object和Map，只有模拟现实世界的实体对象时，才使用Object。如果只是需要`key: value`的数据结构，使用Map结构。因为Map有内建的遍历机制。
 ```js
@@ -387,7 +325,69 @@ function createMicrobrewery(name = 'Hipster Brew Co.') {
 }
 ```
 
-### 函数
+### 函数1
+立即执行的函数可以写成箭头函数形式。
+
+需要使用函数表达式的场合，尽量用箭头函数代替。
+```js
+// best
+let a = [1, 2, 3].map(x => x * x);
+```
+
+用箭头函数取代Function.prototype.bind，简单的、单行的、不会复用的函数，建议使用箭头函数。
+```js
+// bad
+const self = this;
+const boundMethod = function(...params) {
+  return method.apply(self, params);
+}
+
+// acceptable
+const boundMethod = method.bind(this);
+
+// best
+const boundMethod = (...params) => method.apply(this, params);
+```
+
+函数所有配置项option都应该集中在一个对象中，并且放在函数的最后一参数中，布尔值不要直接当做参数。
+```js
+// bad
+function divide(a, b, option = false ) {
+}
+
+// good
+function divide(a, b, { option = false } = {}) {
+}
+```
+
+不要在函数体内使用arguments变量，使用rest运算符（扩展运算符的逆运算）代替。因为arguments是一个类数组对象，而rest运算符提供的是一个真正的数组。
+```js
+// bad
+function concatenateAll() {
+  const args = Array.prototype.slice.call(arguments);
+  return args.join('');
+}
+
+// good
+function concatenateAll(...args) {
+  return args.join('');
+}
+```
+
+使用默认值语法设置函数参数的默认值，而不是在函数内部设置。
+```js
+// bad
+function handleThings(opts) {
+  opts = opts || {};
+}
+
+// good
+function handleThings(opts = {}) {
+  // ...
+}
+```
+
+### 函数2
 
 函数的参数，在理想情况下，定义成少于等于2个。
 *限制函数参数的数量是非常重要的，因为这样可以使得测试你的函数更加简单。函数定义超过三个变量时，当你针对每个独立的参数使用大量的不同的情况来测试函数时，会诱发组合性的爆炸。*
