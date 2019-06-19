@@ -376,10 +376,34 @@ fork: 非阻塞调用的形式执行 fn，返回一个Task对象
 
 
 
+### Context
+Context可以让我们无需明确地传遍每个组件，就能将值深入传递进组件树。
+>ps: Context 主要应用场景在于很多不同层级的组件需要访问同样一些的数据。请谨慎使用，因为这会使得组件的复用性变差。
+如果你只是想避免层层传递一些属性，组件组合（component composition）有时候是一个比 context 更好的解决方案。
+
+### 错误边界
+static getDerivedStateFromError()
+componentDidCatch()
+>使用 static getDerivedStateFromError() 渲染备用 UI ，使用 componentDidCatch() 打印错误信息。
+>ps: 错误边界仅可以捕获其子组件的错误，它无法捕获其自身的错误
 
 
-Babylon 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Babylon
 入口文件app_dev.js，app.js
 HashRouter里Switch组件：
 hash路由，渲染与路径匹配的第一个子 <Route>
@@ -392,7 +416,6 @@ AsyncSysRoute中遍历渲染了指向各个页面的Route组件；
 
 ? 拆分的reducer在哪儿被combine的
 ? saga 在哪儿被连接至 Redux store.
-
 
 
 react Class 中fn() 和fn = () => {}的区别：
