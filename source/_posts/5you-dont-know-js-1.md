@@ -6,7 +6,7 @@ date: 2018-11-20 17:24:37
 updated: 2018-12-10 12:04:21
 categories: study notes #文章分类
 ---
-<img src="./cover-image.jpg" width="250px">
+<img src="./ydkjs.jpg" width="250px">
 本文记录了我在[豆瓣读书](https://read.douban.com/ebook/12051836/ "你不知道的JavaScript（上卷）")阅读《你不知道的JavaScript（上卷）》的过程中，对一些重要的内容进行的划线和批注，经常来看看，巩固巩固基础。
 <!-- more -->
 ---
