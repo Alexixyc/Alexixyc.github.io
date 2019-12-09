@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="technology share,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="AlexiXiang’s Blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="本文记录了自己在实现横向滚动 &amp;amp;&amp;amp; 左滑到底触发 “查看更多” 的功能时，尝试的几种实现方案，主要解决的问题是Android和ios由于弹性盒子特性的差异而采取的差异化处理。">
+<meta name="keywords" content="technology share">
+<meta property="og:type" content="article">
+<meta property="og:title" content="横向滚动 &amp;&amp; 左滑到底触发 &quot;查看更多&quot; 实现方案比较">
+<meta property="og:url" content="http://alexixyc.cn/2019/06/15/7horizontal-scroll/index.html">
+<meta property="og:site_name" content="AlexiXiang’s Blog">
+<meta property="og:description" content="本文记录了自己在实现横向滚动 &amp;amp;&amp;amp; 左滑到底触发 “查看更多” 的功能时，尝试的几种实现方案，主要解决的问题是Android和ios由于弹性盒子特性的差异而采取的差异化处理。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://alexixyc.cn/2019/06/15/7horizontal-scroll/scroll.jpg">
+<meta property="og:updated_time" content="2019-06-19T16:00:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="横向滚动 &amp;&amp; 左滑到底触发 &quot;查看更多&quot; 实现方案比较">
+<meta name="twitter:description" content="本文记录了自己在实现横向滚动 &amp;amp;&amp;amp; 左滑到底触发 “查看更多” 的功能时，尝试的几种实现方案，主要解决的问题是Android和ios由于弹性盒子特性的差异而采取的差异化处理。">
+<meta name="twitter:image" content="http://alexixyc.cn/2019/06/15/7horizontal-scroll/scroll.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://alexixyc.cn/2019/06/15/7horizontal-scroll/">
+
+
+
+
+
+  <title>横向滚动 && 左滑到底触发 "查看更多" 实现方案比较 | AlexiXiang’s Blog</title>
+  
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AlexiXiang’s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://alexixyc.cn/2019/06/15/7horizontal-scroll/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AlexiXiang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AlexiXiang’s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">横向滚动 && 左滑到底触发 "查看更多" 实现方案比较</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-15T00:00:00+08:00">
+                2019-06-15
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2019-06-20T00:00:00+08:00">
+                2019-06-20
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/technology-share/" itemprop="url" rel="index">
+                    <span itemprop="name">technology share</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1.4k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  6
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="/2019/06/15/7horizontal-scroll/./scroll.jpg" width="600px"><br>本文记录了自己在实现横向滚动 &amp;&amp; 左滑到底触发 “查看更多” 的功能时，尝试的几种实现方案，主要解决的问题是Android和ios由于弹性盒子特性的差异而采取的差异化处理。</p>
+<a id="more"></a>
+<hr>
+<h2 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h2><p>Android：待优化<br>ios：<br>思路：弹性滚动可以超出元素scrollWidth / 监听容器scroll事件 / 达到临界值触发”查看更多“</p>
+<p>实现：监听scroll事件</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">scrollListener() &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.topImageList.length === <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">let</span> isPreventTrigger = <span class="literal">false</span>; <span class="comment">// 标志位：防止重复触发</span></span><br><span class="line">  <span class="keyword">const</span> dom = <span class="keyword">this</span>.$refs.imgContainer; <span class="comment">// 目标头图容器</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">const</span> viewPortWidth = <span class="built_in">parseInt</span>(<span class="built_in">window</span>.innerWidth</span><br><span class="line">    || <span class="built_in">document</span>.documentElement.clientWidth</span><br><span class="line">    || <span class="built_in">document</span>.body.clientWidth); <span class="comment">// 屏幕视图宽度，当前场景中等于容器可视区域</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">const</span> func = <span class="function"><span class="params">()</span> =&gt;</span> &#123; <span class="comment">// handler函数，用于事件绑定和解绑</span></span><br><span class="line">    <span class="keyword">const</span> scrollWidth = <span class="built_in">parseInt</span>(dom.scrollWidth); <span class="comment">// 容器内部可滚动的宽度</span></span><br><span class="line">    <span class="keyword">if</span> (dom.scrollLeft &gt; (scrollWidth - viewPortWidth + <span class="number">80</span>)) &#123;</span><br><span class="line">      <span class="comment">// 容器向左👈滚动距离 + 容器可视宽度 &gt; 容器可滚动宽度 + 80像素</span></span><br><span class="line">      <span class="keyword">if</span> (!isPreventTrigger) &#123;</span><br><span class="line">      	<span class="comment">// 并且标志位为false =&gt; 触发”查看更多“</span></span><br><span class="line">        <span class="keyword">this</span>.onMoreBtnClick();</span><br><span class="line">        setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">          <span class="comment">// 2秒（已经触发了”查看更多”）后，标志位置为false</span></span><br><span class="line">          isPreventTrigger = <span class="literal">false</span>;</span><br><span class="line">        &#125;, <span class="number">2000</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 标志位置为true</span></span><br><span class="line">      isPreventTrigger = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="comment">// 目标容器绑定handler函数</span></span><br><span class="line">  dom.addEventListener(<span class="string">'throttleScroll'</span>, func);</span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 返回一个function，用于解除事件绑定</span></span><br><span class="line">    dom.removeEventListener(<span class="string">'throttleScroll'</span>, func);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>遇到的问题：</p>
+<ul>
+<li>绑定事件的时机不保准，需要借助对topImageList的watch / $nextTick / 甚至还要setTimeout才行；</li>
+<li>绑定事件时，存一下remove函数<code>this.removeScrollListener = this.addScrollListener();</code>，并且需要手动在<code>destroyed</code>时执行一下事件解绑；</li>
+<li>ios向左滚动到临界点时立即触发“查看更多”（不确定，记不清了）？期望用户抬起手指时触发，并且可以回滑取消触发；</li>
+<li>Android没有弹性滚动，滚动不可以超出元素scrollWidth，需要另辟蹊径；</li>
+</ul>
+<h2 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h2><p>ios和Android统一使用hotel-common手势库TouchInertial；<br>大体思路：</p>
+<ul>
+<li>监听容器touch事件，模拟惯性滚动、弹性回弹橡皮筋效果，触发临界点根据事件返回的数据自行判断；</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">handleEnd() &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">this</span>.hastransition = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.minSportThreshold - <span class="keyword">this</span>.translateX &gt; <span class="keyword">this</span>.threshold * <span class="number">0.66</span>) &#123;</span><br><span class="line">      setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.onMoreBtnClick();</span><br><span class="line">      &#125;, <span class="number">100</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">this</span>.translateX = <span class="built_in">Math</span>.min(<span class="keyword">this</span>.maxSportThreshold, <span class="built_in">Math</span>.max(<span class="keyword">this</span>.translateX, <span class="keyword">this</span>.minSportThreshold));</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">this</span>.hastransition = <span class="literal">false</span>;</span><br><span class="line">    &#125;, <span class="number">300</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">this</span>.scroller.setOptions(&#123;</span><br><span class="line">      minSportThreshold: <span class="keyword">this</span>.minSportThreshold,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br><span class="line"></span><br><span class="line">bindEvents() &#123;</span><br><span class="line">  <span class="keyword">const</span> el = <span class="keyword">this</span>.$refs.imgContainer;</span><br><span class="line">  <span class="keyword">const</span> viewPortWidth = utils.dom.getClientWidth();</span><br><span class="line">  <span class="keyword">const</span> scrollWidth = el.scrollWidth; <span class="comment">// 这一步需要拿到scrollWidth，需要确保scrollWidth是最终值</span></span><br><span class="line">  <span class="keyword">this</span>.minSportThreshold = viewPortWidth - scrollWidth;</span><br><span class="line">  <span class="keyword">this</span>.scroller = <span class="keyword">new</span> InertialMotion(el, &#123;</span><br><span class="line">    maxSportThreshold: <span class="keyword">this</span>.maxSportThreshold,</span><br><span class="line">    minSportThreshold: <span class="keyword">this</span>.minSportThreshold,</span><br><span class="line">    direction: <span class="string">'x'</span>,</span><br><span class="line">    acceleration: <span class="number">0.00003</span>,</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">this</span>.scroller.on(<span class="string">'touchstart'</span>, () =&gt; &#123;</span><br><span class="line">    <span class="keyword">this</span>.hastransition = <span class="literal">false</span>;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">this</span>.scroller.on(<span class="string">'touchmove'</span>, data =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> willX = <span class="keyword">this</span>.translateX + data.distX;</span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      (willX &gt; <span class="keyword">this</span>.minSportThreshold - <span class="keyword">this</span>.threshold &amp;&amp; willX &lt; <span class="keyword">this</span>.minSportThreshold)</span><br><span class="line">      || (willX &gt; <span class="keyword">this</span>.maxSportThreshold &amp;&amp; willX &lt; <span class="keyword">this</span>.maxSportThreshold + <span class="keyword">this</span>.threshold)</span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="keyword">this</span>.translateX = <span class="keyword">this</span>.translateX + data.distX / <span class="number">3</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (willX &gt;= <span class="keyword">this</span>.minSportThreshold &amp;&amp; willX &lt;= <span class="keyword">this</span>.maxSportThreshold) &#123;</span><br><span class="line">      <span class="keyword">this</span>.translateX = willX;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">this</span>.scroller.on(<span class="string">'beforeAnimation'</span>, () =&gt; &#123;</span><br><span class="line">    <span class="keyword">this</span>.scroller.setOptions(&#123;</span><br><span class="line">      sportInitValue: <span class="keyword">this</span>.translateX,</span><br><span class="line">      maxSportThreshold: <span class="keyword">this</span>.maxSportThreshold + <span class="keyword">this</span>.threshold * <span class="number">0.66</span>,</span><br><span class="line">      minSportThreshold: <span class="keyword">this</span>.minSportThreshold - <span class="keyword">this</span>.threshold * <span class="number">0.66</span> + <span class="number">10</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">this</span>.scroller.on(<span class="string">'animationChange'</span>, distance =&gt; &#123;</span><br><span class="line">    <span class="keyword">this</span>.translateX = distance;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">this</span>.scroller.on(<span class="string">'animationEnd'</span>, <span class="keyword">this</span>.handleEnd.bind(<span class="keyword">this</span>));</span><br><span class="line">  <span class="keyword">this</span>.scroller.on(<span class="string">'tap'</span>, <span class="keyword">this</span>.handleEnd.bind(<span class="keyword">this</span>));</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<ul>
+<li>watch<code>topImageList</code>的长度变化。但发现<code>nextTick</code>的回调中不能保证正确地取到容器的scrollWidth值，所以加了一个<code>setTimeout</code>，并添加日志，上报<code>setTimeout</code>前后的数据。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">topImageList(nVal, oVal) &#123;</span><br><span class="line">  <span class="keyword">if</span> (nVal.length !== oVal.length) &#123;</span><br><span class="line">    <span class="keyword">this</span>.$nextTick(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// *****LOG***** //</span></span><br><span class="line">      <span class="keyword">const</span> swBefore = <span class="keyword">this</span>.$refs.imgContainer.scrollWidth;</span><br><span class="line">      <span class="keyword">const</span> maxBefore = <span class="keyword">this</span>.maxSportThreshold;</span><br><span class="line">      <span class="keyword">const</span> minBefore = <span class="keyword">this</span>.minSportThreshold;</span><br><span class="line">      <span class="keyword">const</span> vwBefore = <span class="keyword">this</span>.$refs.imageWrap.offsetWidth;</span><br><span class="line">      setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.bindEvents();</span><br><span class="line">        <span class="keyword">const</span> swDelay = <span class="keyword">this</span>.$refs.imgContainer.scrollWidth;</span><br><span class="line">        <span class="keyword">const</span> maxDelay = <span class="keyword">this</span>.maxSportThreshold;</span><br><span class="line">        <span class="keyword">const</span> minDelay = <span class="keyword">this</span>.minSportThreshold;</span><br><span class="line">        <span class="keyword">const</span> vwDelay = <span class="keyword">this</span>.$refs.imageWrap.offsetWidth;</span><br><span class="line">        <span class="keyword">if</span> (swDelay - swBefore &gt; <span class="number">1</span> || vwBefore !== vwDelay) &#123;</span><br><span class="line">          utils.statistics.feError(&#123;</span><br><span class="line">            pageType: <span class="string">'detail'</span>,</span><br><span class="line">            errorType: <span class="string">'custom'</span>,</span><br><span class="line">            errorSubType: <span class="string">'scrollWidthNew'</span>,</span><br><span class="line">            errorMessage: <span class="string">'scrollWidth获取不一致'</span>,</span><br><span class="line">            extParams: &#123;</span><br><span class="line">              swBefore,</span><br><span class="line">              swDelay,</span><br><span class="line">              maxBefore,</span><br><span class="line">              maxDelay,</span><br><span class="line">              minBefore,</span><br><span class="line">              minDelay,</span><br><span class="line">              vwBefore,</span><br><span class="line">              vwDelay,</span><br><span class="line">              lengthBefore: oVal.length,</span><br><span class="line">              lengthDelay: nVal.length,</span><br><span class="line">              lengthCurrent: <span class="keyword">this</span>.topImageList.length,</span><br><span class="line">            &#125;,</span><br><span class="line">          &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    <span class="comment">// *****LOG***** //</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>改进点：</p>
+<ul>
+<li>ios Android统一处理</li>
+<li>手动实现惯性滚动参数可调；</li>
+</ul>
+<p>遇到的问题：</p>
+<ul>
+<li>实例化的时机不好把握。需要确保容器渲染完成后，再实例化，但仍然需要依赖<code>setTimeout</code>；</li>
+<li>同样需要手动在<code>destroyed</code>中进行事件的解绑；</li>
+</ul>
+<h2 id="方案三-🌝"><a href="#方案三-🌝" class="headerlink" title="方案三 🌝"></a>方案三 🌝</h2><p>ios 和 Android都使用原生的滚动，监听touch事件<br>ios：监听touchend事件，当touchend触发时，判断一下是否到达零界点即可；<br>Android：当滚动到最右侧时，开始触发translateX；</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">onTouchStart(e) &#123;</span><br><span class="line">  <span class="keyword">if</span> (isAndroid) &#123;</span><br><span class="line">    <span class="keyword">this</span>.hasTransition = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">this</span>.clientX = <span class="built_in">parseInt</span>(e.changedTouches[<span class="number">0</span>].clientX);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br><span class="line"></span><br><span class="line">onTouchMove(e) &#123;</span><br><span class="line">  <span class="keyword">if</span> (isAndroid) &#123;</span><br><span class="line">    <span class="keyword">const</span> el = <span class="keyword">this</span>.$refs.imgContainer;</span><br><span class="line">    <span class="keyword">const</span> &#123; offsetWidth, scrollLeft, scrollWidth &#125; = el;</span><br><span class="line">    <span class="keyword">const</span> threshold = scrollWidth - (offsetWidth + scrollLeft);</span><br><span class="line">    <span class="keyword">const</span> currentX = <span class="built_in">parseInt</span>(e.changedTouches[<span class="number">0</span>].clientX);</span><br><span class="line">    <span class="keyword">const</span> distance = currentX - <span class="keyword">this</span>.clientX;</span><br><span class="line">    <span class="keyword">this</span>.clientX = currentX;</span><br><span class="line">    <span class="keyword">if</span> (threshold &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// 已经滑到最右侧，即将触发translateX</span></span><br><span class="line">      <span class="keyword">if</span> (!<span class="keyword">this</span>.isMoving) &#123;</span><br><span class="line">        <span class="keyword">this</span>.isMoving = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">this</span>.moveStartX = currentX;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">this</span>.translateX + distance &lt; <span class="number">-60</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.translateX = <span class="number">-60</span>;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>.translateX + distance &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.translateX = <span class="number">0</span>;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.translateX = <span class="keyword">this</span>.translateX + distance;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (currentX &lt; <span class="keyword">this</span>.moveStartX) &#123;</span><br><span class="line">      <span class="keyword">this</span>.$refs.imgContainer.style.setProperty(<span class="string">'overflow-x'</span>, <span class="string">'hidden'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br><span class="line"></span><br><span class="line">onTouchEnd() &#123;</span><br><span class="line">  <span class="keyword">if</span> (isAndroid) &#123;</span><br><span class="line">    <span class="keyword">this</span>.hasTransition = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.translateX &lt; <span class="number">-55</span>) &#123;</span><br><span class="line">      setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.onMoreBtnClick();</span><br><span class="line">      &#125;, <span class="number">150</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">this</span>.moveStartX = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">this</span>.isMoving = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">this</span>.translateX = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">this</span>.$refs.imgContainer.style.setProperty(<span class="string">'overflow-x'</span>, <span class="string">'auto'</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> el = <span class="keyword">this</span>.$refs.imgContainer;</span><br><span class="line">    <span class="keyword">const</span> &#123; offsetWidth, scrollLeft, scrollWidth &#125; = el;</span><br><span class="line">    <span class="keyword">const</span> threshold = scrollWidth - (offsetWidth + scrollLeft);</span><br><span class="line">    <span class="keyword">if</span> (threshold &lt; <span class="number">-55</span>) &#123;</span><br><span class="line">      setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.onMoreBtnClick();</span><br><span class="line">      &#125;, <span class="number">200</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>改进点：</p>
+<ul>
+<li>Android，ios都是使用原生的滚动，体验更加流畅；</li>
+<li>不用考虑在何时绑定事件或者等待容器渲染完毕后创建实例等问题，即不用判断头图容器渲染完毕的时机；</li>
+<li>直接使用vue的v-on指令绑定touchstart、touchmove、touchend，不需要手动销毁事件绑定，组件销毁时，事件自动删除；</li>
+</ul>
+<p>缺陷：</p>
+<ul>
+<li>Android中当滑到临界点后，手动回滚，取消触发“查看更多”事件时，需要重新触发touchstart才能重新触发滚动。</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>↘↘👻我不要脸👻↙↙</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="AlexiXiang 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="AlexiXiang 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/technology-share/" rel="tag"># technology share</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/23/6js-coding-style/" rel="next" title="JavaScript编程风格">
+                <i class="fa fa-chevron-left"></i> JavaScript编程风格
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/10/8nginx/" rel="prev" title="Nginx 相关知识点总结👀">
+                Nginx 相关知识点总结👀 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8zNDM3My8xMDkxMA=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="AlexiXiang">
+            
+              <p class="site-author-name" itemprop="name">AlexiXiang</p>
+              <p class="site-description motion-element" itemprop="description">Look ahead to the day you die.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alexixyc" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:alexixyc@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/profile.php?id=100019367790425" target="_blank" title="FB Page">
+                      
+                        <i class="fa fa-fw fa-facebook"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.youtube.com/channel/UC6UTrplKuiGOwuqF4znDWAg?view_as=subscriber" target="_blank" title="YouTube">
+                      
+                        <i class="fa fa-fw fa-youtube"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.instagram.com/alexi_xiang/" target="_blank" title="Instagram">
+                      
+                        <i class="fa fa-fw fa-instagram"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://dribbble.com/alexi_xiang" target="_blank" title="dribbble">
+                      
+                        <i class="fa fa-fw fa-dribbble"></i></a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#方案一"><span class="nav-number">1.</span> <span class="nav-text">方案一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方案二"><span class="nav-number">2.</span> <span class="nav-text">方案二</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方案三-🌝"><span class="nav-number">3.</span> <span class="nav-text">方案三 🌝</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AlexiXiang</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="study notes,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="AlexiXiang’s Blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="由于在近期工作中，前端微服务项目需要自己写一些静态资源访问的相关Nginx配置，而作为前端开发人员，对Nginx这块技术一直缺乏比较系统的了解，所以在这里抽空整理了一些Nginx相关的基本知识。">
+<meta name="keywords" content="study notes">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx 相关知识点总结👀">
+<meta property="og:url" content="http://alexixyc.cn/2019/10/10/8nginx/index.html">
+<meta property="og:site_name" content="AlexiXiang’s Blog">
+<meta property="og:description" content="由于在近期工作中，前端微服务项目需要自己写一些静态资源访问的相关Nginx配置，而作为前端开发人员，对Nginx这块技术一直缺乏比较系统的了解，所以在这里抽空整理了一些Nginx相关的基本知识。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://alexixyc.cn/2019/10/10/8nginx/nginx.png">
+<meta property="og:image" content="http://alexixyc.cn/2019/10/10/8nginx/zxdl.jpg">
+<meta property="og:image" content="http://alexixyc.cn/2019/10/10/8nginx/fxdl.jpg">
+<meta property="og:image" content="http://alexixyc.cn/2019/10/10/8nginx/load_balancer.jpg">
+<meta property="og:image" content="http://alexixyc.cn/2019/10/10/8nginx/hot_standby.gif">
+<meta property="og:image" content="http://alexixyc.cn/2019/10/10/8nginx/master_worker.jpg">
+<meta property="og:updated_time" content="2019-10-25T12:45:31.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Nginx 相关知识点总结👀">
+<meta name="twitter:description" content="由于在近期工作中，前端微服务项目需要自己写一些静态资源访问的相关Nginx配置，而作为前端开发人员，对Nginx这块技术一直缺乏比较系统的了解，所以在这里抽空整理了一些Nginx相关的基本知识。">
+<meta name="twitter:image" content="http://alexixyc.cn/2019/10/10/8nginx/nginx.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://alexixyc.cn/2019/10/10/8nginx/">
+
+
+
+
+
+  <title>Nginx 相关知识点总结👀 | AlexiXiang’s Blog</title>
+  
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AlexiXiang’s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://alexixyc.cn/2019/10/10/8nginx/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AlexiXiang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AlexiXiang’s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Nginx 相关知识点总结👀</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-10T14:38:28+08:00">
+                2019-10-10
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2019-10-25T20:45:31+08:00">
+                2019-10-25
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/study-notes/" itemprop="url" rel="index">
+                    <span itemprop="name">study notes</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.4k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  12
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="/2019/10/10/8nginx/./nginx.png" width="600px"><br>由于在近期工作中，前端微服务项目需要自己写一些静态资源访问的相关Nginx配置，而作为前端开发人员，对Nginx这块技术一直缺乏比较系统的了解，所以在这里抽空整理了一些Nginx相关的基本知识。</p>
+<a id="more"></a>
+<hr>
+<h2 id="Nginx基本概念"><a href="#Nginx基本概念" class="headerlink" title="Nginx基本概念"></a>Nginx基本概念</h2><p>Nginx 是一款轻量级、高性能、跨平台的Web服务器。</p>
+<ul>
+<li>更快：在正常情况下，单次请求会得到更快的响应；在高峰期（如有数以万计的并发请求），<code>Nginx</code>可以比其他Web服务器更快地响应请求。</li>
+<li>高扩展性：设计极具扩展性，它完全是由多个不同功能、不同层次、不同类型且耦合度极低的模块组成。</li>
+<li>高可靠性：<code>Nginx</code>的高可靠性来自于其核心框架代码的优秀设计、模块设计的简单性。</li>
+<li>低内存消耗：10000个非活跃的<code>HTTP</code> <code>Keep-Alive</code>连接在<code>Nginx</code>中仅消耗2.5MB的内存。</li>
+<li>高并发：单机支持10万以上的并发连接。</li>
+<li>热部署：<code>master</code>管理进程与<code>worker</code>工作进程的分离设计，使得<code>Nginx</code>能够提供热部署功能，即可以在7×24小时不间断服务的前提下，升级<code>Nginx</code>的可执行文件。</li>
+</ul>
+<p>Nginx常用功能：<strong>HTTP反向代理服务器</strong>、<strong>负载均衡服务器</strong>。</p>
+<h2 id="反向代理"><a href="#反向代理" class="headerlink" title="反向代理"></a>反向代理</h2><h3 id="正向代理-ForwordProxy"><a href="#正向代理-ForwordProxy" class="headerlink" title="正向代理 ( ForwordProxy )"></a>正向代理 ( ForwordProxy )</h3><p>正向代理是一个位于客户端和目标服务器之间的代理服务器，客户端向代理服务器发送一个请求，并且<strong>指定目标服务器</strong>，然后代理服务器向目标服务器转交并将获得的数据返回给客户端，正向代理需要客户端进行一些特殊的设置。</p>
+<p><img src="/2019/10/10/8nginx/./zxdl.jpg" width="350px"></p>
+<blockquote>
+<ul>
+<li>正向代理需要客户端<strong>主动设置代理服务器</strong>ip或者域名进行访问，由设置的服务器ip或者域名去获取内容并返回；</li>
+<li>正向代理是<strong>代理客户端</strong>，为客户端收发请求。使真实客户端对服务器不可见；</li>
+<li>翻墙（VPN）</li>
+</ul>
+</blockquote>
+<h3 id="反向代理-ReverseProxy"><a href="#反向代理-ReverseProxy" class="headerlink" title="反向代理 ( ReverseProxy )"></a>反向代理 ( ReverseProxy )</h3><p>反向代理是代理服务端，对于客户端来说，反向代理的过程是一个黑盒。客户端发送请求到代理服务器，代理服务器来决定具体请求哪个目标服务器，并将请求转交给客户端，客户端并不会感知到反向代理后面的服务，甚至可以将反向代理服务器当做真正的目标服务器，不需要客户端做任何的设置。</p>
+<p><img src="/2019/10/10/8nginx/./fxdl.jpg" width="350px"></p>
+<blockquote>
+<ul>
+<li>反向代理不需要客户端做任何设置，直接访问真实的ip或域名，服务器内部会决定最终访问哪台真实的服务器机器；</li>
+<li>反向代理是<strong>代理服务器端</strong>，为服务器收发请求，使真实服务器对客户端不可见；</li>
+<li>保护和隐藏原始资源服务器 / 负载均衡 / 缓存静态内容 / 外网发布 / (webpack-devServer proxy)</li>
+</ul>
+</blockquote>
+<h2 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h2><p>负载均衡 ( Load Balancing ) 是高可用架构的一个关键组件，主要用来提高性能和可用性，通过负载均衡将流量分发到多个服务器，同时多服务器能够消除这部分的单点故障。</p>
+<p><img src="/2019/10/10/8nginx/./load_balancer.jpg" width="400px"></p>
+<p>但负载均衡器本身就是一个单点故障隐患，其中一个解决方案就是双机热备。</p>
+<p><img src="/2019/10/10/8nginx/./hot_standby.gif" width="400px"></p>
+<h3 id="负载均衡算法"><a href="#负载均衡算法" class="headerlink" title="负载均衡算法"></a>负载均衡算法</h3><p>Nginx 的负载均衡模块目前支持 6 种调度算法，下面进行分别介绍，其中后两项属于第三方调度算法。</p>
+<ul>
+<li>轮询（默认）：每个请求按时间顺序逐一分配到不同的后端服务器，如果后端某台服务器宕机，故障系统被自动剔除，使用户访问不受影响。Weight 指定轮询权值，Weight 值越大，分配到的访问机率越高，主要用于后端每个服务器性能不均的情况下。</li>
+<li>ip_hash：每个请求按访问 IP 的 hash 结果分配，这样来自同一个 IP 的访客固定访问一个后端服务器，有效解决了动态网页存在的 session 共享问题。</li>
+<li>fair：这是比上面两个更加智能的负载均衡算法。此种算法可以依据页面大小和加载时间长短智能地进行负载均衡，也就是根据后端服务器的响应时间来分配请求，响应时间短的优先分配。Nginx 本身是不支持 fair 的，如果需要使用这种调度算法，必须下载 Nginx 的 upstream_fair 模块。</li>
+<li>url_hash：此方法按访问 url 的 hash 结果来分配请求，使每个 url 定向到同一个后端服务器，可以进一步提高后端缓存服务器的效率。Nginx 本身是不支持 url_hash 的，如果需要使用这种调度算法，必须安装 Nginx 的 hash 软件包。</li>
+<li>least_conn：最少连接负载均衡算法，简单来说就是每次选择的后端都是当前最少连接的一个 server(这个最少连接不是共享的，是每个 worker 都有自己的一个数组进行记录后端 server 的连接数)。</li>
+<li>hash：这个 hash 模块又支持两种模式 hash, 一种是普通的 hash, 另一种是一致性 hash(consistent)。</li>
+</ul>
+<h2 id="Master-Worker模式"><a href="#Master-Worker模式" class="headerlink" title="Master-Worker模式"></a>Master-Worker模式</h2><p><img src="/2019/10/10/8nginx/./master_worker.jpg" width="400px"></p>
+<p>Nginx启动后，会有一个<code>master</code>进程和多个相互独立的<code>worker</code>进程。</p>
+<ul>
+<li>其中，master进程负责读取并验证配置文件<code>nginx.conf</code>、管理<code>worker</code>进程、接收来自外界的信号，向各<code>worker</code>进程发送信号（每个进程都有可能来处理这个连接）、监控<code>worker</code>进程的运行状态，当<code>worker</code>进程退出后(异常情况下)，会自动启动新的<code>worker</code>进程。</li>
+<li>而每一个<code>worker</code>进程负责维护一个线程（避免线程切换）、处理连接和请求。<code>worker</code>进程的个数由配置文件决定，一般会设置成机器<code>cpu</code>核数，有利于进程切换（因为更多的worker 数，只会导致进程相互竞争 cpu，从而带来不必要的上下文切换）。</li>
+</ul>
+<h2 id="常用配置"><a href="#常用配置" class="headerlink" title="常用配置"></a>常用配置</h2><p>Nginx配置文件分为几个部分：</p>
+<ul>
+<li>全局块：配置影响Nginx全局的指令。例如：运行nginx服务器的用户组，nginx进程运行文件存放地址，日志存放路径，配置文件引入，允许生成worker process进程数等。</li>
+<li>events块：配置影响nginx服务器或与用户的网络连接。有每个进程的最大连接数，选取哪种事件驱动模型处理连接请求，是否允许同时接受多个网路连接，开启多个网络连接序列化等。</li>
+<li>http块：可以嵌套多个server，配置代理，缓存，日志定义等绝大多数功能和第三方模块的配置。如文件引入，mime-type定义，日志自定义，是否使用sendfile传输文件，连接超时时间，单连接请求数等。</li>
+<li>server块：配置虚拟主机的相关参数，一个http中可以有多个server。</li>
+<li>location块：配置请求的路由，以及各种页面的处理情况。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"># 全局块</span><br><span class="line">...              </span><br><span class="line"># events块</span><br><span class="line">events &#123;         </span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br><span class="line"># http块</span><br><span class="line">http      </span><br><span class="line">&#123;</span><br><span class="line">    # http全局块</span><br><span class="line">    ...   </span><br><span class="line">    # 虚拟主机server块</span><br><span class="line">    server        </span><br><span class="line">    &#123; </span><br><span class="line">        # server全局块</span><br><span class="line">        ...       </span><br><span class="line">        # location块</span><br><span class="line">        location [PATTERN]   </span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        location [PATTERN] </span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    server</span><br><span class="line">    &#123;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">    # http全局块</span><br><span class="line">    ...     </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="虚拟主机与请求的分发-sever"><a href="#虚拟主机与请求的分发-sever" class="headerlink" title="虚拟主机与请求的分发(sever)"></a>虚拟主机与请求的分发(sever)</h3><p>由于IP地址的数量有限，因此经常存在多个主机域名对应着同一个IP地址的情况，这时在<code>nginx.conf</code>中就可以按照<code>server_name</code>（对应用户请求中的主机域名）并通过<code>server</code>块来定义<strong>虚拟主机</strong>，每个<code>server</code>块就是一个<strong>虚拟主机</strong>，它只处理与之相对应的主机域名请求。这样，一台服务器上的Nginx就能以不同的方式处理访问不同主机域名的HTTP请求了。 </p>
+<h4 id="监听端口"><a href="#监听端口" class="headerlink" title="监听端口"></a>监听端口</h4><p>监听端口: 决定Nginx服务如何监听端口。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">  listen <span class="number">80</span>; <span class="comment">// 默认</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="主机名称"><a href="#主机名称" class="headerlink" title="主机名称"></a>主机名称</h4><p>主机名称，在开始处理一个HTTP请求时，Nginx会取出header头中的Host，与每个server中的server_name进行匹配，以此决定到底由哪一个server块来处理这个请求。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">  server_name www.domain1.com;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="URI路径匹配"><a href="#URI路径匹配" class="headerlink" title="URI路径匹配"></a>URI路径匹配</h4><p><code>location</code>会尝试根据用户请求中的URI来和配置进行匹配，如果匹配到了对应的<code>location</code>块，就选择用<code>location{}</code>块中的配置来处理用户这次请求。</p>
+<ul>
+<li><p><code>=</code> 表示匹配URI时，是完全匹配：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location = <span class="regexp">/feature &#123;</span></span><br><span class="line"><span class="regexp">  /</span><span class="regexp">/ 只有当请求是/</span>feature时，才会匹配成功</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>~</code> 表示匹配URI时是字母大小写敏感的;</p>
+</li>
+<li><code>~*</code> 表示匹配URI时忽略字母大小写;</li>
+<li><p><code>^~</code> 表示匹配URI时只需要其前半部分与uri参数匹配即可：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ^~ <span class="regexp">/images/</span> &#123;</span><br><span class="line">  <span class="comment">// 所有images开头的都会匹配到，例如/images/activity</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>还可以使用正则匹配：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ~* \.(gif|jpg|png)$ &#123;</span><br><span class="line">  <span class="comment">// 匹配以.gif/.jpg/.png结尾的请求</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>匹配所有请求：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">  <span class="comment">// 可以匹配所有请求</span></span><br><span class="line">  <span class="comment">// 由于匹配是根据配置的顺序从上往下找的，所以`location / &#123;&#125;`一般写在最后</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="文件路径的定义"><a href="#文件路径的定义" class="headerlink" title="文件路径的定义"></a>文件路径的定义</h3><h4 id="资源根目录"><a href="#资源根目录" class="headerlink" title="资源根目录"></a>资源根目录</h4><ul>
+<li>以root方式设置资源路径（根目录）<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location /download/ &#123;</span><br><span class="line">  root /home/app/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>在上面的配置中，如果有一个请求的URI是<code>/download/main.html</code>，那么Web服务器将会返回服务器上<code>/home/app/download/main.html</code>文件的内容。</p>
+<ul>
+<li><p>以alias方式设置资源路径（别名）<br>alias也是用来设置文件资源路径的，它与root的不同点主要在于如何解读紧跟location后面的uri参数，下面配置，请求URI是<code>/conf/nginx.conf</code>，但实际访问的文件是<code>usr/local/nginx/conf/nginx.conf</code>的内容</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">location conf &#123;</span><br><span class="line">  alias usr/local/nginx/conf/;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用root的方法：</span></span><br><span class="line">location conf &#123;</span><br><span class="line">  root usr/local/nginx/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>访问首页<br>若访问站点的URI是/，这时一般是返回网站的首页，而这与root和alias都不同，这里用ngx_http_index_module模块提供的index配置实现。index后可以跟多个文件参数，Nginx将会按照顺序来尝试访问这些文件。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location &#123;</span><br><span class="line">  root path;</span><br><span class="line">  index index.html htmlindex.php /index.php;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>根据HTTP返回码重定向页面<br>当对于某个请求返回错误码时，如果匹配上了error_page中设置的code，则重定向到新的URI中：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">error_page <span class="number">404</span> <span class="number">404.</span>html;</span><br><span class="line">error_page <span class="number">502</span> <span class="number">503</span> <span class="number">504</span> <span class="number">50</span>x.html;</span><br><span class="line">error_page <span class="number">403</span> http:<span class="comment">//example.com/forbidden.html</span></span><br><span class="line"></span><br><span class="line">location / &#123;</span><br><span class="line">  error_page <span class="number">404</span> @fallback; <span class="comment">// 返回404的请求会被反向代理到http://backend 上游服务器中</span></span><br><span class="line">&#125;</span><br><span class="line">location @fallback &#123;</span><br><span class="line">  proxy_pass http:<span class="comment">//backend;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// @表示仅用于Nginx服务内部请求之间的重定向，带有@的location不直接处理用户请求。</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>try_files<br>try_files后要跟若干路径，如path1 path2…，而且最后必须要有uri参数，意义如下：尝试按照顺序访问每一个path，如果可以有效地读取，就直接向用户返回这个path对应的文件结束请求，否则继续向下访问。如果所有的path都找不到有效的文件，就重定向到最后的参数uri上。因此，最后这个参数uri必须存在，而且它应该是可以有效重定向的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">try_files main.html $uri $uri/index.html $uri.html @other;</span><br><span class="line">location @other &#123;</span><br><span class="line">  proxy_pass http:<span class="comment">//backend;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="负载均衡基本配置"><a href="#负载均衡基本配置" class="headerlink" title="负载均衡基本配置"></a>负载均衡基本配置</h3><ul>
+<li><p>upstream块<br>upstream块定义了一个上游服务器的集群，便于反向代理中的proxy_pass使用，例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">upstream backend &#123;</span><br><span class="line">  server backend1.example.com;</span><br><span class="line">  server backend2.example.com;</span><br><span class="line">  server backend3.example.com;</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">  location / &#123;</span><br><span class="line">    proxy_pass http:<span class="comment">//backend;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>server块<br>server配置项指定了一台上游服务器的名字，这个名字可以是域名、IP地址端口、UNIX句柄等，在其后还可以跟一些参数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">upstream backend &#123;</span><br><span class="line">  server backend1.example.com weight=<span class="number">5</span>; <span class="comment">// 向这台上游服务器转发的权重</span></span><br><span class="line">  server <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">8080</span> max_fails=<span class="number">3</span> fail_timeout=<span class="number">30</span>s; <span class="comment">// 在fail_timeout时间段内，如果向当前的上游服务器转发失败次数超过max_fails次，则认为在当前的fail_timeout时间段内这台上游服务器不可用。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="反向代理的基本配置"><a href="#反向代理的基本配置" class="headerlink" title="反向代理的基本配置"></a>反向代理的基本配置</h3><ul>
+<li><p>proxy_pass<br>此配置项将当前请求反向代理到URL参数指定的服务器上，URL可以是主机名或IP地址加端口的形式：</p>
+</li>
+<li><p>proxy_method<br>设置转发时的协议方法名</p>
+</li>
+<li><p>proxy_hide_header<br>任意地指定哪些HTTP头部字段不能被转发</p>
+</li>
+<li><p>proxy_pass_header<br>与proxy_hide_header功能相反，proxy_pass_header会将原来禁止转发的header设置为允许转发</p>
+</li>
+<li><p>proxy_pass_request_body<br>作用为确定是否向上游服务器发送HTTP包体部分, on/off, 默认on</p>
+</li>
+<li><p>proxy_pass_request_headers<br>是否转发HTTP头部, on/off, 默认on</p>
+</li>
+<li><p>proxy_set_header<br>是Nginx设置请求头信息给上游服务器;(注意与add_header区分)</p>
+</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">proxy_pass http:<span class="comment">//localhost:8000/uri/;</span></span><br><span class="line">proxy_method POST;</span><br><span class="line">proxy_hide_header Cache-Control;</span><br><span class="line">proxy_pass_header X-Accel-Redirect;</span><br><span class="line">proxy_pass_request_body on;</span><br><span class="line">proxy_pass_request_headers on;</span><br></pre></td></tr></table></figure>
+<h3 id="添加响应头"><a href="#添加响应头" class="headerlink" title="添加响应头"></a>添加响应头</h3><ul>
+<li>add_header 将自定义的头信息的添加到响应头，是设置给浏览器；<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">add_header Access-Control-Allow-Origin *;</span><br><span class="line">add_header Access-Control-Allow-Methods <span class="string">'GET, POST, OPTIONS'</span>;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="收获"><a href="#收获" class="headerlink" title="收获"></a>收获</h2><p>经过这段时间查阅相关文章和书籍，对Nginx有了更多的了解，对反向代理 &amp;&amp; 负载均衡也有了一个更具象化的认知，对Nginx的一些常用的配置有了更进一步的了解。</p>
+<blockquote>
+<p><strong>参考文献:</strong><br><em><a href="https://zhuanlan.zhihu.com/p/34943332" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/34943332</a></em><br><em><a href="https://www.jianshu.com/p/208c02c9dd1d" target="_blank" rel="noopener">https://www.jianshu.com/p/208c02c9dd1d</a></em><br><em><a href="https://zhuanlan.zhihu.com/p/24524057" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/24524057</a></em><br><em><a href="https://artislong.oss-cn-hangzhou.aliyuncs.com/files/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Nginx%E6%A8%A1%E5%9D%97%E5%BC%80%E5%8F%91%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%A7%A3%E6%9E%90%E7%AC%AC2%E7%89%88.pdf" target="_blank" rel="noopener">《深入理解Nginx模块开发与架构解析第2版》</a></em><br>*<a href="https://moonbingbing.gitbooks.io/openresty-best-practices/ngx/balancer.html" target="_blank" rel="noopener">OpenResty最佳实践</a></p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>↘↘👻我不要脸👻↙↙</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="AlexiXiang 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="AlexiXiang 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/study-notes/" rel="tag"># study notes</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/15/7horizontal-scroll/" rel="next" title="横向滚动 && 左滑到底触发 " 查看更多"="" 实现方案比较"="">
+                <i class="fa fa-chevron-left"></i> 横向滚动 && 左滑到底触发 "查看更多" 实现方案比较
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/11/04/9openresty/" rel="prev" title="OpenResty && Lua学习笔记 👀">
+                OpenResty && Lua学习笔记 👀 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8zNDM3My8xMDkxMA=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="AlexiXiang">
+            
+              <p class="site-author-name" itemprop="name">AlexiXiang</p>
+              <p class="site-description motion-element" itemprop="description">Look ahead to the day you die.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alexixyc" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:alexixyc@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/profile.php?id=100019367790425" target="_blank" title="FB Page">
+                      
+                        <i class="fa fa-fw fa-facebook"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.youtube.com/channel/UC6UTrplKuiGOwuqF4znDWAg?view_as=subscriber" target="_blank" title="YouTube">
+                      
+                        <i class="fa fa-fw fa-youtube"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.instagram.com/alexi_xiang/" target="_blank" title="Instagram">
+                      
+                        <i class="fa fa-fw fa-instagram"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://dribbble.com/alexi_xiang" target="_blank" title="dribbble">
+                      
+                        <i class="fa fa-fw fa-dribbble"></i></a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Nginx基本概念"><span class="nav-number">1.</span> <span class="nav-text">Nginx基本概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#反向代理"><span class="nav-number">2.</span> <span class="nav-text">反向代理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#正向代理-ForwordProxy"><span class="nav-number">2.1.</span> <span class="nav-text">正向代理 ( ForwordProxy )</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反向代理-ReverseProxy"><span class="nav-number">2.2.</span> <span class="nav-text">反向代理 ( ReverseProxy )</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#负载均衡"><span class="nav-number">3.</span> <span class="nav-text">负载均衡</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#负载均衡算法"><span class="nav-number">3.1.</span> <span class="nav-text">负载均衡算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Master-Worker模式"><span class="nav-number">4.</span> <span class="nav-text">Master-Worker模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常用配置"><span class="nav-number">5.</span> <span class="nav-text">常用配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#虚拟主机与请求的分发-sever"><span class="nav-number">5.1.</span> <span class="nav-text">虚拟主机与请求的分发(sever)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#监听端口"><span class="nav-number">5.1.1.</span> <span class="nav-text">监听端口</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#主机名称"><span class="nav-number">5.1.2.</span> <span class="nav-text">主机名称</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#URI路径匹配"><span class="nav-number">5.1.3.</span> <span class="nav-text">URI路径匹配</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件路径的定义"><span class="nav-number">5.2.</span> <span class="nav-text">文件路径的定义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#资源根目录"><span class="nav-number">5.2.1.</span> <span class="nav-text">资源根目录</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#负载均衡基本配置"><span class="nav-number">5.3.</span> <span class="nav-text">负载均衡基本配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反向代理的基本配置"><span class="nav-number">5.4.</span> <span class="nav-text">反向代理的基本配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加响应头"><span class="nav-number">5.5.</span> <span class="nav-text">添加响应头</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#收获"><span class="nav-number">6.</span> <span class="nav-text">收获</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AlexiXiang</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

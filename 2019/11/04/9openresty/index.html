@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="study notes,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="AlexiXiang’s Blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="由于公司C端业务的 Nginx 框架使用的是OpenResty。在上一篇文章学习了 Nginx 基础知识后，决定再学习一下 Lua 和 OpenResty。本文记录了自己学习过程中的一些笔记和总结，尝试了OpenResty在本地搭建简单的API Server框架的demo，包括处理接口路由以及操作 Redis 的的流程。通过学习，未将来可能涉及到OpenResty的开发做一些准备。">
+<meta name="keywords" content="study notes">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenResty &amp;&amp; Lua学习笔记 👀">
+<meta property="og:url" content="http://alexixyc.cn/2019/11/04/9openresty/index.html">
+<meta property="og:site_name" content="AlexiXiang’s Blog">
+<meta property="og:description" content="由于公司C端业务的 Nginx 框架使用的是OpenResty。在上一篇文章学习了 Nginx 基础知识后，决定再学习一下 Lua 和 OpenResty。本文记录了自己学习过程中的一些笔记和总结，尝试了OpenResty在本地搭建简单的API Server框架的demo，包括处理接口路由以及操作 Redis 的的流程。通过学习，未将来可能涉及到OpenResty的开发做一些准备。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://alexixyc.cn/2019/11/04/9openresty/openresty.svg">
+<meta property="og:updated_time" content="2019-11-09T16:00:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OpenResty &amp;&amp; Lua学习笔记 👀">
+<meta name="twitter:description" content="由于公司C端业务的 Nginx 框架使用的是OpenResty。在上一篇文章学习了 Nginx 基础知识后，决定再学习一下 Lua 和 OpenResty。本文记录了自己学习过程中的一些笔记和总结，尝试了OpenResty在本地搭建简单的API Server框架的demo，包括处理接口路由以及操作 Redis 的的流程。通过学习，未将来可能涉及到OpenResty的开发做一些准备。">
+<meta name="twitter:image" content="http://alexixyc.cn/2019/11/04/9openresty/openresty.svg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://alexixyc.cn/2019/11/04/9openresty/">
+
+
+
+
+
+  <title>OpenResty && Lua学习笔记 👀 | AlexiXiang’s Blog</title>
+  
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AlexiXiang’s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://alexixyc.cn/2019/11/04/9openresty/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AlexiXiang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AlexiXiang’s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">OpenResty && Lua学习笔记 👀</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-04T00:00:00+08:00">
+                2019-11-04
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2019-11-10T00:00:00+08:00">
+                2019-11-10
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/study-notes/" itemprop="url" rel="index">
+                    <span itemprop="name">study notes</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.3k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  13
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="/2019/11/04/9openresty/./openresty.svg" width="600px"><br>由于公司C端业务的 Nginx 框架使用的是OpenResty。在上一篇文章学习了 Nginx 基础知识后，决定再学习一下 Lua 和 OpenResty。本文记录了自己学习过程中的一些笔记和总结，尝试了OpenResty在本地搭建简单的API Server框架的demo，包括处理接口路由以及操作 Redis 的的流程。通过学习，未将来可能涉及到OpenResty的开发做一些准备。</p>
+<a id="more"></a>
+<hr>
+<h2 id="Lua"><a href="#Lua" class="headerlink" title="Lua"></a>Lua</h2><p>Lua 是一个小巧的脚本语言。是巴西里约热内卢天主教大学（Pontifical Catholic University of Rio de Janeiro）里的一个研究小组，由 Roberto Ierusalimschy、Waldemar Celes 和 Luiz Henrique de Figueiredo 所组成并于 1993 年开发。其设计目的是为了嵌入应用程序中，从而为应用程序提供灵活的扩展和定制功能。Lua 由标准 C 编写而成，几乎在所有操作系统和平台上都可以编译、运行。Lua 并没有提供强大的库，这是由它的定位决定的。所以 Lua 不适合作为开发独立应用程序的语言。Lua 有一个同时进行的 JIT 项目，提供在特定平台上的即时编译功能。</p>
+<p>Lua 脚本可以很容易的被 C/C++ 代码调用，也可以反过来调用 C/C++ 的函数，这使得 Lua 在应用程序中可以被广泛应用。不仅仅作为扩展脚本，也可以作为普通的配置文件，代替 XML、ini 等文件格式，并且更容易理解和维护。标准 Lua 5.1 解释器由标准 C 编写而成，代码简洁优美，几乎在所有操作系统和平台上都可以编译和运行；一个完整的标准 Lua 5.1 解释器不足 200KB。而本书推荐使用的 LuaJIT 2 的代码大小也只有不足 500KB，同时也支持大部分常见的体系结构。在目前所有脚本语言引擎中，LuaJIT 2 实现的速度应该算是最快的之一。这一切都决定了 Lua 是作为嵌入式脚本的最佳选择。</p>
+<p>Lua 语言的各个版本是不相兼容的。因此本书只介绍 Lua 5.1 语言，这是为标准 Lua 5.1 解释器和 LuaJIT 2 所共同支持的。LuaJIT 支持的对 Lua 5.1 向后兼容的 Lua 5.2 和 Lua 5.3 的特性，我们也会在方便的时候予以介绍。</p>
+<p><a href="https://www.jianshu.com/p/70769e81d6cf" target="_blank" rel="noopener">安装LuaJIT遇到的问题</a></p>
+<h3 id="Lua基础数据类型"><a href="#Lua基础数据类型" class="headerlink" title="Lua基础数据类型"></a>Lua基础数据类型</h3><ul>
+<li>nil（空）：nil 是一种类型，Lua 将 nil 用于表示“无效值”。一个变量在第一次赋值前的默认值是 nil，将 nil 赋予给一个全局变量就等同于删除它。</li>
+<li>boolean（布尔）：可选值 true/false；Lua 中 nil 和 false 为“假”，其它所有值均为“真”。<strong>（0和空字符串是”真”）</strong></li>
+<li>number（数字）</li>
+<li>string（字符串）</li>
+<li>table (表)：Table 类型实现了一种抽象的“关联数组”，通常实现为一个哈希表、一个数组、或者两者的混合。</li>
+<li>function (函数)：在 Lua 中，函数 也是一种数据类型，函数可以存储在变量中，可以通过参数传递给其他函数，还可以作为其他函数的返回值。</li>
+</ul>
+<h3 id="Lua表达式"><a href="#Lua表达式" class="headerlink" title="Lua表达式"></a>Lua表达式</h3><ul>
+<li>算术运算符： + - * / ^ %</li>
+<li>关系运算符： &lt; &gt; &lt;= &gt;= == ~=(不等于)<blockquote>
+<p>Lua 字符串总是会被“内化”，即相同内容的字符串只会被保存一份，因此 Lua 字符串之间的相等性比较可以简化为其内部存储地址的比较。这意味着 Lua 字符串的相等性比较总是为 O(1). 而在其他编程语言中，字符串的相等性比较则通常为 O(n)，即需要逐个字节（或按若干个连续字节）进行比较。</p>
+</blockquote>
+</li>
+<li>逻辑运算符： and(与) or(或) not(非)  （对于 not，永远只返回 true 或者 false）</li>
+</ul>
+<h3 id="控制结构"><a href="#控制结构" class="headerlink" title="控制结构"></a>控制结构</h3><ul>
+<li><p>if/else</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">score = <span class="number">0</span></span><br><span class="line"><span class="keyword">if</span> score == <span class="number">100</span> <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">"Very good!Your score is 100"</span>)</span><br><span class="line"><span class="keyword">elseif</span> score &gt;= <span class="number">60</span> <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">"Congratulations, you have passed it,your score greater or equal to 60"</span>)</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="keyword">if</span> score &gt; <span class="number">0</span> <span class="keyword">then</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"Your score is better than 0"</span>)</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"My God, your score turned out to be 0"</span>)</span><br><span class="line">    <span class="keyword">end</span> <span class="comment">--与上一示例代码不同的是，此处要添加一个end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>while</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> t = &#123;<span class="number">1</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">8</span>, <span class="number">11</span>, <span class="number">18</span>, <span class="number">21</span>&#125;</span><br><span class="line"><span class="keyword">local</span> i</span><br><span class="line"><span class="keyword">for</span> i, v <span class="keyword">in</span> <span class="built_in">ipairs</span>(t) <span class="keyword">do</span></span><br><span class="line">    <span class="keyword">if</span> <span class="number">11</span> == v <span class="keyword">then</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"index["</span> .. i .. <span class="string">"] have right value[11]"</span>)</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h3><p>一个 Lua 模块的数据结构是用一个 Lua 值（通常是一个 Lua 表或者 Lua 函数）。一个 Lua 模块代码就是一个会返回这个 Lua 值的代码块。 可以使用内建函数 require() 来加载和缓存模块。简单的说，一个代码模块就是一个程序库，可以通过 require 来加载。模块加载后的结果通过是一个 Lua table，这个表就像是一个命名空间，其内容就是模块中导出的所有东西，比如函数和变量。require 函数会返回 Lua 模块加载后的结果，即用于表示该 Lua 模块的 Lua 值。</p>
+<h2 id="OpenResty"><a href="#OpenResty" class="headerlink" title="OpenResty"></a>OpenResty</h2><p>OpenResty® 是一个基于 Nginx 与 Lua 的高性能 Web 平台，其内部集成了大量精良的 Lua 库、第三方模块以及大多数的依赖项。用于方便地搭建能够处理超高并发、扩展性极高的动态 Web 应用、Web 服务和动态网关。</p>
+<p>OpenResty® 通过汇聚各种设计精良的 Nginx 模块（主要由 OpenResty 团队自主开发），从而将 Nginx 有效地变成一个强大的通用 Web 应用平台。这样，Web 开发人员和系统工程师可以使用 Lua 脚本语言调动 Nginx 支持的各种 C 以及 Lua 模块，快速构造出足以胜任 10K 乃至 1000K 以上单机并发连接的高性能 Web 应用系统。</p>
+<p>OpenResty® 的目标是让你的Web服务直接跑在 Nginx 服务内部，充分利用 Nginx 的非阻塞 I/O 模型，不仅仅对 HTTP 客户端请求,甚至于对远程后端诸如 MySQL、PostgreSQL、Memcached 以及 Redis 等都进行一致的高性能响应。</p>
+<p><a href="https://moonbingbing.gitbooks.io/openresty-best-practices/lua/class.html" target="_blank" rel="noopener">gitbook</a></p>
+<h3 id="与location配合"><a href="#与location配合" class="headerlink" title="与location配合"></a>与location配合</h3><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">location = /sum &#123;</span><br><span class="line">    # 只允许内部调用</span><br><span class="line">    internal;</span><br><span class="line"></span><br><span class="line">    # 这里做了一个求和运算只是一个例子，可以在这里完成一些数据库、</span><br><span class="line">    # 缓存服务器的操作，达到基础模块和业务逻辑分离目的</span><br><span class="line">    content_by_lua_block &#123;</span><br><span class="line">        ngx.sleep(<span class="number">0.1</span>)</span><br><span class="line">        <span class="keyword">local</span> args = ngx.req.get_uri_args()</span><br><span class="line">        ngx.say(<span class="built_in">tonumber</span>(args.a) + <span class="built_in">tonumber</span>(args.b))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location = /subduction &#123;</span><br><span class="line">    internal;</span><br><span class="line">    content_by_lua_block &#123;</span><br><span class="line">        ngx.sleep(<span class="number">0.1</span>)</span><br><span class="line">        <span class="keyword">local</span> args = ngx.req.get_uri_args()</span><br><span class="line">        ngx.<span class="built_in">print</span>(<span class="built_in">tonumber</span>(args.a) - <span class="built_in">tonumber</span>(args.b))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location = /app/test_parallels &#123;</span><br><span class="line">    content_by_lua_block &#123;</span><br><span class="line">        <span class="keyword">local</span> start_time = ngx.now()</span><br><span class="line">        <span class="keyword">local</span> res1, res2 = ngx.location.capture_multi( &#123;</span><br><span class="line">                        &#123;<span class="string">"/sum"</span>, &#123;args=&#123;a=<span class="number">3</span>, b=<span class="number">8</span>&#125;&#125;&#125;,</span><br><span class="line">                        &#123;<span class="string">"/subduction"</span>, &#123;args=&#123;a=<span class="number">3</span>, b=<span class="number">8</span>&#125;&#125;&#125;</span><br><span class="line">                    &#125;)</span><br><span class="line">        ngx.say(<span class="string">"status:"</span>, res1.<span class="built_in">status</span>, <span class="string">" response:"</span>, res1.body)</span><br><span class="line">        ngx.say(<span class="string">"status:"</span>, res2.<span class="built_in">status</span>, <span class="string">" response:"</span>, res2.body)</span><br><span class="line">        ngx.say(<span class="string">"time used:"</span>, ngx.now() - start_time)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location = /app/test_queue &#123;</span><br><span class="line">    content_by_lua_block &#123;</span><br><span class="line">        <span class="keyword">local</span> start_time = ngx.now()</span><br><span class="line">        <span class="keyword">local</span> res1 = ngx.location.capture_multi( &#123;</span><br><span class="line">                        &#123;<span class="string">"/sum"</span>, &#123;args=&#123;a=<span class="number">3</span>, b=<span class="number">8</span>&#125;&#125;&#125;</span><br><span class="line">                    &#125;)</span><br><span class="line">        <span class="keyword">local</span> res2 = ngx.location.capture_multi( &#123;</span><br><span class="line">                        &#123;<span class="string">"/subduction"</span>, &#123;args=&#123;a=<span class="number">3</span>, b=<span class="number">8</span>&#125;&#125;&#125;</span><br><span class="line">                    &#125;)</span><br><span class="line">        ngx.say(<span class="string">"status:"</span>, res1.<span class="built_in">status</span>, <span class="string">" response:"</span>, res1.body)</span><br><span class="line">        ngx.say(<span class="string">"status:"</span>, res2.<span class="built_in">status</span>, <span class="string">" response:"</span>, res2.body)</span><br><span class="line">        ngx.say(<span class="string">"time used:"</span>, ngx.now() - start_time)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>利用 ngx.location.capture_multi 函数，直接完成了两个子请求并行执行。当两个请求没有相互依赖，这种方法可以极大提高查询效率。</p>
+<h3 id="获取uri参数"><a href="#获取uri参数" class="headerlink" title="获取uri参数"></a>获取uri参数</h3><h4 id="获取请求uri参数"><a href="#获取请求uri参数" class="headerlink" title="获取请求uri参数"></a>获取请求uri参数</h4><ul>
+<li>方法<code>ngx.req.get_uri_args</code>：获取来自 uri 请求的参数</li>
+<li>方法<code>ngx.req.get_post_args</code>：获取来自 post 请求的内容<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">location /print_param &#123;</span><br><span class="line">    content_by_lua_block &#123;</span><br><span class="line">        <span class="keyword">local</span> <span class="built_in">arg</span> = ngx.req.get_uri_args()</span><br><span class="line">        <span class="keyword">for</span> k,v <span class="keyword">in</span> <span class="built_in">pairs</span>(<span class="built_in">arg</span>) <span class="keyword">do</span></span><br><span class="line">            ngx.say(<span class="string">"[GET ] key:"</span>, k, <span class="string">" v:"</span>, v)</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        ngx.req.read_body() <span class="comment">-- 解析 body 参数之前一定要先读取 body</span></span><br><span class="line">        <span class="keyword">local</span> <span class="built_in">arg</span> = ngx.req.get_post_args()</span><br><span class="line">        <span class="keyword">for</span> k,v <span class="keyword">in</span> <span class="built_in">pairs</span>(<span class="built_in">arg</span>) <span class="keyword">do</span></span><br><span class="line">            ngx.say(<span class="string">"[POST] key:"</span>, k, <span class="string">" v:"</span>, v)</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="传递请求uri参数"><a href="#传递请求uri参数" class="headerlink" title="传递请求uri参数"></a>传递请求uri参数</h4><ul>
+<li>方法<code>ngx.encode_args</code>：进行规则转义<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">location /test &#123;</span><br><span class="line">    content_by_lua_block &#123;</span><br><span class="line">        <span class="keyword">local</span> res = ngx.location.capture(</span><br><span class="line">                <span class="string">'/print_param'</span>,</span><br><span class="line">                &#123;</span><br><span class="line">                    method = ngx.HTTP_POST,</span><br><span class="line">                    args = ngx.encode_args(&#123;a = <span class="number">1</span>, b = <span class="string">'2&amp;'</span>&#125;),</span><br><span class="line">                    body = ngx.encode_args(&#123;c = <span class="number">3</span>, d = <span class="string">'4&amp;'</span>&#125;)</span><br><span class="line">                &#125;</span><br><span class="line">            )</span><br><span class="line">        ngx.say(res.body)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="获取请求body"><a href="#获取请求body" class="headerlink" title="获取请求body"></a>获取请求body</h3><p>在 Nginx 的典型应用场景中，几乎都是只读取 HTTP 头即可，例如负载均衡、正反向代理等场景。但是对于 API Server 或者 Web Application ，对 body 可以说就比较敏感了。由于 OpenResty 基于 Nginx ，所以天然的对请求 body 的读取细节与其他成熟 Web 框架有些不同。                                                                   </p>
+<ul>
+<li>方法<code>ngx.req.get_body_data</code>：获取请求的body部分<blockquote>
+<p>注意：获取body部分需要添加指令 <code>lua_need_request_body on;</code>，因为主要是 Nginx 诞生之初主要是为了解决负载均衡情况，而这种情况，是不需要读取 body 就可以决定负载策略的，所以默认是不能获取请求体的；</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># 默认读取 body</span><br><span class="line">lua_need_request_body on;</span><br><span class="line"></span><br><span class="line">location /test &#123;</span><br><span class="line">    content_by_lua_block &#123;</span><br><span class="line">        <span class="keyword">local</span> data = ngx.req.get_body_data()</span><br><span class="line">        ngx.say(<span class="string">"hello "</span>, data)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+</li>
+</ul>
+<p>如果你只是某个接口需要读取 body（并非全局行为），那么这时候也可以显示调用 <code>ngx.req.read_body()</code> 接口：<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">location /test &#123;</span><br><span class="line">    content_by_lua_block &#123;</span><br><span class="line">        ngx.req.read_body()</span><br><span class="line">        <span class="keyword">local</span> data = ngx.req.get_body_data()</span><br><span class="line">        ngx.say(<span class="string">"hello "</span>, data)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="输出响应体"><a href="#输出响应体" class="headerlink" title="输出响应体"></a>输出响应体</h3><p>在OpenResty 中调用<code>ngx.say</code> 与 <code>ngx.print</code>可以输出响应体，二者区别在于：<code>ngx.say</code> 输出的响应体会多一个换行符 \n。</p>
+<blockquote>
+<p>注意<code>ngx.say</code> 与 <code>ngx.print</code> 都是异步输出</p>
+</blockquote>
+<h4 id="处理响应体过大的输出"><a href="#处理响应体过大的输出" class="headerlink" title="处理响应体过大的输出"></a>处理响应体过大的输出</h4><ul>
+<li><p>输出内容本身体积很大，例如超过 2G 的文件下载<br>利用 HTTP 1.1 特性 CHUNKED 编码，把一个大的响应体拆分成多个小的应答体，分批、有节制的响应给请求方。</p>
+</li>
+<li><p>输出内容本身是由各种碎片拼凑的，碎片数量庞大，例如应答数据是某地区所有人的姓名<br>利用 ngx.print 输入参数可以是单个或多个字符串参数，也可以是 table 对象的这一特性，把碎片数据直接存放在 table 中，用数组的方式把这些碎片数据统一起来，直接调用 ngx.print(table）即可。</p>
+</li>
+</ul>
+<h3 id="简单API-Server框架"><a href="#简单API-Server框架" class="headerlink" title="简单API Server框架"></a>简单API Server框架</h3><ul>
+<li>首先，配置多个API时，为了保持 nginx 配置文件的简洁，要把这些接口的实现放到各自的独立<code>lua</code>文件中；</li>
+<li>其次，对每个 API 都写一个 location会让Nginx配置变得复杂，所以需要把它们都合并到一个location配置中；</li>
+</ul>
+<p>首先，定义lua文件搜索路径，设置location正则匹配，根据匹配到的路由名称指向对应的lua文件；<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    # 设置默认 lua 搜索路径，添加 lua 路径</span><br><span class="line">    # 此处写相对路径时，对启动 nginx 的路径有要求，必须在 nginx 目录下启动，<span class="built_in">require</span> 找不到</span><br><span class="line">    # comm.param 绝对路径当然也没问题，但是不可移植，因此应使用变量 $prefix 或</span><br><span class="line">    # $&#123;prefix&#125;，OR 会替换为 nginx 的 prefix <span class="built_in">path</span></span><br><span class="line">    # lua_package_path <span class="string">'lua/?.lua;/blah/?.lua;;'</span>;</span><br><span class="line">    lua_package_path <span class="string">'$prefix/lua/?.lua;/blah/?.lua;;'</span>;</span><br><span class="line">    server &#123;</span><br><span class="line">        listen <span class="number">80</span>;</span><br><span class="line">        location ~ ^/api/([-_a-zA-Z0<span class="number">-9</span>/]+) &#123;</span><br><span class="line">            # 准入阶段完成参数验证 (断言？？)</span><br><span class="line">            access_by_lua_file  lua/access_check.lua;</span><br><span class="line">            #内容生成阶段</span><br><span class="line">            content_by_lua_file lua/$<span class="number">1.</span>lua;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>第二步，新建实现接口的lua文件，编写接口逻辑，输出响应体；<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--========== &#123;$prefix&#125;/lua/addition.lua</span></span><br><span class="line"><span class="keyword">local</span> args = ngx.req.get_uri_args()</span><br><span class="line">ngx.say(args.a + args.b)</span><br></pre></td></tr></table></figure></p>
+<p>最后，还可以加一个参数的检查验证的逻辑；<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--========== &#123;$prefix&#125;/lua/comm/param.lua</span></span><br><span class="line"><span class="keyword">local</span> _M = &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 对输入参数逐个进行校验，只要有一个不是数字类型，则返回 false</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_M.is_number</span><span class="params">(...)</span></span></span><br><span class="line">    <span class="keyword">local</span> <span class="built_in">arg</span> = &#123;...&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">local</span> num</span><br><span class="line">    <span class="keyword">for</span> _,v <span class="keyword">in</span> <span class="built_in">ipairs</span>(<span class="built_in">arg</span>) <span class="keyword">do</span></span><br><span class="line">        num = <span class="built_in">tonumber</span>(v)</span><br><span class="line">        <span class="keyword">if</span> <span class="literal">nil</span> == num <span class="keyword">then</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> _M</span><br><span class="line"></span><br><span class="line"><span class="comment">--========== &#123;$prefix&#125;/lua/access_check.lua</span></span><br><span class="line"><span class="keyword">local</span> param= <span class="built_in">require</span>(<span class="string">"comm.param"</span>)</span><br><span class="line"><span class="keyword">local</span> args = ngx.req.get_uri_args()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> args.a <span class="keyword">or</span> <span class="keyword">not</span> args.b <span class="keyword">or</span> <span class="keyword">not</span> param.is_number(args.a, args.b) <span class="keyword">then</span></span><br><span class="line">    ngx.<span class="built_in">exit</span>(ngx.HTTP_BAD_REQUEST)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="子查询"><a href="#子查询" class="headerlink" title="子查询"></a>子查询</h3><p>Nginx 子请求是一种非常强有力的方式，它可以发起非阻塞的内部请求访问目标 location。但是子请求只是模拟 HTTP 接口的形式， 没有额外的 HTTP/TCP 流量，也没有 IPC (进程间通信) 调用，所有工作在内部高效地在 C 语言级别完成。API方法<code>ngx.location.capture</code>和<code>ngx.location.capture_multi</code>。</p>
+<h3 id="连接Redis"><a href="#连接Redis" class="headerlink" title="连接Redis"></a>连接Redis</h3><p>首先将连接Redis的方法封装在redis文件夹下的main.lua中，并导出redis连接实例对象：<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> Redis = &#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Redis.connect</span><span class="params">()</span></span></span><br><span class="line">  <span class="comment">-- 引入redis包</span></span><br><span class="line">  <span class="keyword">local</span> redis = <span class="built_in">require</span> <span class="string">"resty.redis"</span></span><br><span class="line">  <span class="comment">-- 创建新的redis连接</span></span><br><span class="line">  <span class="keyword">local</span> red = redis:new()</span><br><span class="line">  <span class="comment">-- 设置redis连接超时时间</span></span><br><span class="line">  red:set_timeout(<span class="number">1000</span>) <span class="comment">-- 1 sec</span></span><br><span class="line">  <span class="comment">-- 通过ip地址和端口建立连接</span></span><br><span class="line">  <span class="keyword">local</span> ok, err = red:connect(<span class="string">"127.0.0.1"</span>, <span class="number">6379</span>)</span><br><span class="line">  <span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">then</span></span><br><span class="line">      ngx.say(<span class="string">"failed to connect: "</span>, err)</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">return</span> red</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">return</span> Redis</span><br></pre></td></tr></table></figure></p>
+<p>然后再新建一个redis操作文件，引用上面导出的redis连接对象，做一些对键值对的 set 和 get 操作（其实，还可以单独封装set、get方法），尝试操作 redis：<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> Redis = <span class="built_in">require</span>(<span class="string">"redis.main"</span>) <span class="comment">-- 引用上面导出的redis连接对象</span></span><br><span class="line"><span class="keyword">local</span> red = Redis.connect() <span class="comment">-- 调用connect连接方法</span></span><br><span class="line"><span class="comment">-- 获取url参数</span></span><br><span class="line"><span class="keyword">local</span> args = ngx.req.get_uri_args()</span><br><span class="line"><span class="keyword">local</span> key = args.key</span><br><span class="line"><span class="keyword">local</span> value = args.value</span><br><span class="line"></span><br><span class="line"><span class="comment">-- set一个键值对</span></span><br><span class="line">ok, err = red:set(key, value)</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">then</span></span><br><span class="line">    ngx.say(<span class="string">"failed to set key: "</span>, err)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">ngx.say(<span class="string">"set "</span>, key, <span class="string">": "</span>, ok)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 取出刚刚set的键值对</span></span><br><span class="line"><span class="keyword">local</span> res, err = red:get(key)</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> res <span class="keyword">then</span></span><br><span class="line">    ngx.say(<span class="string">"failed to get key: "</span>, err)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">ngx.say(<span class="string">"get "</span>, key, <span class="string">": "</span>, res)</span><br></pre></td></tr></table></figure></p>
+<p>最后，在Nginx.conf里配置location的Lua代码块：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">location ~ ^<span class="regexp">/api/</span>([-_a-zA-Z0<span class="number">-9</span>/]+) &#123;</span><br><span class="line">    access_by_lua_file  lua/access_check.lua;</span><br><span class="line">    content_by_lua_file lua/$<span class="number">1.</span>lua;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<!-- reload： nginx -p `pwd`/ -c conf/nginx.conf -s reload
+查看：ps -ef | grep nginx -->
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>↘↘👻我不要脸👻↙↙</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="AlexiXiang 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="AlexiXiang 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/study-notes/" rel="tag"># study notes</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/10/8nginx/" rel="next" title="Nginx 相关知识点总结👀">
+                <i class="fa fa-chevron-left"></i> Nginx 相关知识点总结👀
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/11/15/10vue-modal-manager/" rel="prev" title="VueModalManager —— 移动端全屏弹窗管理插件">
+                VueModalManager —— 移动端全屏弹窗管理插件 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8zNDM3My8xMDkxMA=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="AlexiXiang">
+            
+              <p class="site-author-name" itemprop="name">AlexiXiang</p>
+              <p class="site-description motion-element" itemprop="description">Look ahead to the day you die.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alexixyc" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:alexixyc@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/profile.php?id=100019367790425" target="_blank" title="FB Page">
+                      
+                        <i class="fa fa-fw fa-facebook"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.youtube.com/channel/UC6UTrplKuiGOwuqF4znDWAg?view_as=subscriber" target="_blank" title="YouTube">
+                      
+                        <i class="fa fa-fw fa-youtube"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.instagram.com/alexi_xiang/" target="_blank" title="Instagram">
+                      
+                        <i class="fa fa-fw fa-instagram"></i></a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://dribbble.com/alexi_xiang" target="_blank" title="dribbble">
+                      
+                        <i class="fa fa-fw fa-dribbble"></i></a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lua"><span class="nav-number">1.</span> <span class="nav-text">Lua</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Lua基础数据类型"><span class="nav-number">1.1.</span> <span class="nav-text">Lua基础数据类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Lua表达式"><span class="nav-number">1.2.</span> <span class="nav-text">Lua表达式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#控制结构"><span class="nav-number">1.3.</span> <span class="nav-text">控制结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#模块"><span class="nav-number">1.4.</span> <span class="nav-text">模块</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenResty"><span class="nav-number">2.</span> <span class="nav-text">OpenResty</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#与location配合"><span class="nav-number">2.1.</span> <span class="nav-text">与location配合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取uri参数"><span class="nav-number">2.2.</span> <span class="nav-text">获取uri参数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#获取请求uri参数"><span class="nav-number">2.2.1.</span> <span class="nav-text">获取请求uri参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#传递请求uri参数"><span class="nav-number">2.2.2.</span> <span class="nav-text">传递请求uri参数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取请求body"><span class="nav-number">2.3.</span> <span class="nav-text">获取请求body</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#输出响应体"><span class="nav-number">2.4.</span> <span class="nav-text">输出响应体</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#处理响应体过大的输出"><span class="nav-number">2.4.1.</span> <span class="nav-text">处理响应体过大的输出</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简单API-Server框架"><span class="nav-number">2.5.</span> <span class="nav-text">简单API Server框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#子查询"><span class="nav-number">2.6.</span> <span class="nav-text">子查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连接Redis"><span class="nav-number">2.7.</span> <span class="nav-text">连接Redis</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AlexiXiang</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
