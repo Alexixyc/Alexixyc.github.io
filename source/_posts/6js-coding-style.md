@@ -6,7 +6,7 @@ date: 2019-01-23 17:56:37
 updated: 2019-01-23 17:56:37
 categories: study notes #文章分类
 ---
-<img src="./jscs.jpg" width="400px">
+<img src="./jscs.jpg" width="600px">
 对于团队协作的开发者，编程规范是很重要的。本文持续收集/整理/更新一些js开发的良好代码规范，当做笔记，规范自己的代码风格，让自己的代码更好看👀。
 <!-- more -->
 ---

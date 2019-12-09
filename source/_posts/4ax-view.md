@@ -5,9 +5,9 @@ tags:
   - personal program
 date: 2018-10-18 12:04:10
 updated: 2018-11-06 11:04:10
-categories: 个人项目
+categories: technology project
 ---
-<img src="./wss.jpg" width="250px">
+<img src="./wss.jpg" width="600px">
 基于vue实现一些常用UI组件,封装成库，取名ax-view
 <!-- more -->
 ---

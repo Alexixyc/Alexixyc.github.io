@@ -1,6 +1,15 @@
-第一次commit 38ec96bd
-
-头图滚动 && 左拉触发 "查看更多" 事件
+---
+title: 横向滚动 && 左滑到底触发 "查看更多" 实现方案比较
+tags:
+  - technology share
+date: 2019-06-15 00:00:00
+updated: 2019-06-20 00:00:00
+categories: technology share #文章分类
+---
+<img src="./scroll.jpg" width="600px">
+本文记录了自己在实现横向滚动 && 左滑到底触发 "查看更多" 的功能时，尝试的几种实现方案，主要解决的问题是Android和ios由于弹性盒子特性的差异而采取的差异化处理。
+<!-- more -->
+---
 
 ## 方案一
 Android：待优化
@@ -8,8 +17,6 @@ ios：
 思路：弹性滚动可以超出元素scrollWidth / 监听容器scroll事件 / 达到临界值触发”查看更多“
 
 实现：监听scroll事件
-
-<!-- <img src="./头图滚动/scrollListener.png" width="800px"> -->
 
 ```js
 scrollListener() {
@@ -56,8 +63,6 @@ scrollListener() {
 ios和Android统一使用hotel-common手势库TouchInertial；
 大体思路：
 + 监听容器touch事件，模拟惯性滚动、弹性回弹橡皮筋效果，触发临界点根据事件返回的数据自行判断；
-
-<!-- <img src="./头图滚动/TouchInertial.png" width="800px"> -->
 
 ```js
 handleEnd() {
@@ -120,7 +125,6 @@ bindEvents() {
 },
 ```
 
-
 + watch`topImageList`的长度变化。但发现`nextTick`的回调中不能保证正确地取到容器的scrollWidth值，所以加了一个`setTimeout`，并添加日志，上报`setTimeout`前后的数据。
 
 ```js
@@ -173,7 +177,6 @@ topImageList(nVal, oVal) {
 遇到的问题：
 + 实例化的时机不好把握。需要确保容器渲染完成后，再实例化，但仍然需要依赖`setTimeout`；
 + 同样需要手动在`destroyed`中进行事件的解绑；
-
 
 ## 方案三 🌝
 ios 和 Android都使用原生的滚动，监听touch事件

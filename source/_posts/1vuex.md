@@ -6,7 +6,7 @@ date: 2018-03-07 17:24:37
 updated: 2018-05-02 12:04:21
 categories: study notes #文章分类
 ---
-<img src="./vuex.png" width="400px">
+<img src="./vuex.png" width="600px">
 vuex学习笔记
 <!-- more -->
 ---
