@@ -78,13 +78,12 @@ notSure = "maybe a string instead";
 notSure = false; // okay, definitely a boolean
 ```
 
-### void
 
-
-
-### Interfaces
+## Interfaces 接口
 TypeScript的一个核心概念是对值所具有的结构进行类型检查。它有时候被称做“鸭式辨型法”或“结构性子类型化”。
 **接口**的作用就是为这些类型命名和为你的代码或第三方代码定义契约。
+
+### 普通接口
 ```js
 // 接口来描述：规定LabeledValue必须包含一个label属性且类型为string
 interface LabeledValue {
@@ -99,7 +98,7 @@ let myObj = {size: 10, label: "Size 10 Object"};
 printLabel(myObj);
 ```
 
-#### 可选属性
+### 可选属性
 接口里的参数不全是必需的，可以有可选的属性
 ```js
 interface SquareConfig {
@@ -108,7 +107,7 @@ interface SquareConfig {
 }
 ```
 
-#### 只读属性
+### 只读属性
 一些对象属性只能在刚刚创建的时候修改其值，可以在属性名前用readonly来指定只读属性。
 ```ts
 interface Point {
@@ -122,7 +121,7 @@ p1.x = 5; // error!
 **`readonly`** vs **`const`**
 最简单判断该用readonly还是const的方法是看要把它做为变量使用还是做为一个属性。 做为变量使用的话用 const，若做为属性则使用readonly。
 
-#### 函数类型
+### 函数类型
 接口除了描述带有属性的普通对象外，接口也可以描述函数类型。
 为了使用接口表示函数类型，我们需要给接口定义一个调用签名。 它就像是一个只有参数列表和返回值类型的函数定义。参数列表里的每个参数都需要名字和类型。
 ```js
@@ -152,14 +151,100 @@ mySearch = function(src, sub) {
 ```
 函数返回值若不是接口定义的，则类型检查器会报错。
 
-#### 可索引的类型
+### 可索引的类型
+可索引类型具有一个索引签名，它描述了对象索引的类型，还有相应的索引返回值类型。
+```ts
+interface StringArray {
+  [index: number]: string;
+}
+let myArray: StringArray;
+myArray = ["Bob", "Fred"];
+let myStr: string = myArray[0];
+```
+上面的`StringArray`接口，具有索引签名。这个索引签名表示了用`number`去索引`StringArray`时会得到`string`类型的返回值。
 
+- 可索引签名有两种：字符串和数字，__可以同时混用，但是数字索引的返回值必须是字符串索引的返回值的子类型__。因为当我们在用数字索引的时候，JavaScript会先把它转换成一个字符串，再去当做对象的索-引。例如用`100(number)`当做索引的时候，实际上是当做了`"100"(string)`，所以在检查的时候会先验证`string`类型的索引，__所以`string`类型的索引返回值必须是`number`类型索引返回值的父类型__。
+```ts
+class Animal {
+    name: string;
+}
+class Dog extends Animal {
+    breed: string;
+}
+// Error: indexing with a numeric string might get you a completely separate type of Animal!
+interface NotOkay {
+  [x: number]: Animal;
+  [x: string]: Dog;
+}
+
+// Ok: indexing with a numeric string might get you a completely separate type of Animal!
+interface NotOkay {
+  [x: number]: Dog;
+  [x: string]: Animal;
+}
+```
+
+- 当索引和非索引混用时，非索引的返回值需要是索引类型返回值的子集，例如下面的例子：
+```ts
+interface NumberDictionary {
+  [index: string]: number;
+  length: number;    // ok, length is a number
+  name: string;      // error, the type of 'name' is not a subtype of the indexer
+}
+
+// 联合类型
+interface NumberOrStringDictionary {
+  [index: string]: number | string;
+  length: number;    // ok, length is a number
+  name: string;      // ok, name is a string
+}
+```
+
+- 只读类型
+```ts
+interface ReadonlyStringArray {
+    readonly [index: number]: string;
+}
+let myArray: ReadonlyStringArray = ["Alice", "Bob"];
+myArray[2] = "Mallory"; // error!
+```
+
+### 类类型
+类的最基本的作用就是，明确地强制一个类去符合某种特定的规则。
+```ts
+interface ClockInterface {
+  currentTime: Date;
+}
+class Clock implements ClockInterface {
+  currentTime: Date = new Date();
+  constructor(h: number, m: number) { }
+}
+```
+
+可以在接口中描述一个方法，然后在类中去实现它，例如下面的`setTime`方法：
+```js
+interface ClockInterface {
+  currentTime: Date;
+  setTime(d: Date): void;
+}
+class Clock implements ClockInterface {
+  currentTime: Date = new Date();
+  setTime(d: Date) {
+      this.currentTime = d;
+  }
+  constructor(h: number, m: number) { }
+}
+```
+
+接口描述了类的公共的部分，而不是公有和私有的部分。这让你不能用他们来检查
 
 
 
 静态类型检查
 有一些语法糖private...
 tsc可以只做静态类型检查/编译js/只生成声明文件
+
+
 
 
 
